@@ -1,0 +1,4631 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TuneVault — Завантажуйте музику легко й швидко</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================
+   TuneVault — design tokens
+   ========================================================== */
+:root {
+  --bg: #0A0C10;
+  --bg-soft: #0D1015;
+  --surface: #12151B;
+  --surface-2: #191D25;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  --text: #EDEEF2;
+  --text-dim: #9AA0AC;
+  --text-faint: #676D79;
+
+  --accent-1: #8B6BFF;
+  --accent-2: #2FE0C6;
+  --accent-3: #FF9166;
+  --accent-grad: linear-gradient(120deg, var(--accent-1), var(--accent-2));
+  --accent-grad-warm: linear-gradient(120deg, var(--accent-2), var(--accent-3));
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+
+  --shadow-glow: 0 0 0 1px rgba(139, 107, 255, 0.15), 0 20px 60px -20px rgba(139, 107, 255, 0.35);
+  --shadow-glow-warm: 0 0 0 1px rgba(255, 145, 102, 0.18), 0 16px 44px -16px rgba(255, 145, 102, 0.4);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --font-display: "Sora", "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
+}
+
+@media (prefers-color-scheme: light) {
+  :root { color-scheme: dark; }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  margin: 0;
+  color: var(--text);
+}
+
+p { margin: 0; }
+
+a { color: inherit; text-decoration: none; }
+
+.container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================
+   Navbar
+   ========================================================== */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(10, 12, 16, 0.7);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s var(--ease), background 0.3s var(--ease);
+}
+
+.navbar.is-scrolled {
+  border-bottom-color: var(--border);
+  background: rgba(10, 12, 16, 0.86);
+}
+
+.navbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+}
+
+.navbar__logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.navbar__logo-mark {
+  display: inline-flex;
+}
+
+.navbar__links {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+}
+
+.navbar__link {
+  font-size: 0.94rem;
+  color: var(--text-dim);
+  position: relative;
+  padding: 6px 0;
+  transition: color 0.25s var(--ease);
+}
+
+.navbar__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: 0;
+  height: 1px;
+  background: var(--accent-grad);
+  transition: right 0.3s var(--ease);
+}
+
+.navbar__link:hover {
+  color: var(--text);
+}
+
+.navbar__link:hover::after {
+  right: 0;
+}
+
+.navbar__right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lang-switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.lang-switch__btn {
+  position: relative;
+  z-index: 1;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+  color: var(--text-faint);
+  padding: 6px 13px;
+  border-radius: 999px;
+  transition: color 0.3s var(--ease);
+}
+
+.lang-switch__btn.is-active {
+  color: #0A0C10;
+}
+
+.lang-switch__btn:not(.is-active):hover {
+  color: var(--text-dim);
+}
+
+.lang-switch::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 4px);
+  background: var(--accent-grad);
+  border-radius: 999px;
+  transition: transform 0.3s var(--ease);
+}
+
+.lang-switch[data-active="en"]::before {
+  transform: translateX(100%);
+}
+
+.navbar__burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.navbar__burger span {
+  display: block;
+  width: 22px;
+  height: 1.6px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
+  margin: 0 auto;
+}
+
+.navbar__burger[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(6.6px) rotate(45deg);
+}
+.navbar__burger[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+.navbar__burger[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-6.6px) rotate(-45deg);
+}
+
+/* ==========================================================
+   Hero
+   ========================================================== */
+.hero {
+  position: relative;
+  padding: 168px 0 120px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero__waves {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  padding-bottom: 0;
+  opacity: 0.35;
+  mask-image: linear-gradient(to bottom, transparent, rgba(0,0,0,0.9) 45%, transparent 92%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, rgba(0,0,0,0.9) 45%, transparent 92%);
+}
+
+.hero__waves span {
+  width: 4px;
+  border-radius: 3px;
+  background: var(--accent-grad);
+  animation: wave 2.4s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.25); }
+  50% { transform: scaleY(1); }
+}
+
+.hero__inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.eyebrow {
+  font-size: 0.86rem;
+  color: var(--accent-2);
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.hero__title {
+  font-size: clamp(2.2rem, 5.4vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  max-width: 14ch;
+}
+
+.hero__subtitle {
+  margin-top: 20px;
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  color: var(--text-dim);
+  max-width: 46ch;
+}
+
+/* ==========================================================
+   Downloader form
+   ========================================================== */
+.downloader {
+  margin-top: 44px;
+  width: 100%;
+  max-width: 620px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.downloader__field {
+  position: relative;
+  flex: 1 1 340px;
+  display: flex;
+  align-items: center;
+}
+
+.downloader__icon {
+  position: absolute;
+  left: 20px;
+  color: var(--detected-color, var(--text-faint));
+  pointer-events: none;
+  transition: color 0.3s var(--ease);
+  z-index: 1;
+}
+
+.downloader__field:focus-within .downloader__icon {
+  color: var(--detected-color, var(--accent-2));
+}
+
+.downloader__input {
+  width: 100%;
+  height: 58px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1rem;
+  font-family: var(--font-body);
+  padding: 0 20px 0 52px;
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.25s var(--ease), padding 0.25s var(--ease);
+}
+
+.downloader__field.has-badge .downloader__input {
+  padding-right: 132px;
+}
+
+.downloader__input::placeholder {
+  color: var(--text-faint);
+}
+
+.downloader__input:hover {
+  border-color: var(--border-strong);
+}
+
+.downloader__input:focus {
+  outline: none;
+  border-color: var(--detected-color, var(--accent-1));
+  background: var(--surface-2);
+  box-shadow: 0 0 0 4px var(--detected-glow, rgba(139, 107, 255, 0.14));
+}
+
+/* detected-service badge shown inside the input */
+.downloader__badge {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 6px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  opacity: 0;
+  transform: translateX(4px) scale(0.96);
+  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.downloader__badge.is-visible {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.downloader__badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--detected-color, var(--accent-2));
+  flex: 0 0 auto;
+}
+
+/* invalid link state */
+.downloader__field.is-invalid .downloader__input {
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.06);
+}
+
+.downloader__field.is-invalid .downloader__input:focus {
+  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.16);
+}
+
+.downloader__field.is-invalid .downloader__icon {
+  color: #ff6b6b;
+}
+
+.downloader__field.is-shaking {
+  animation: fieldShake 0.4s var(--ease);
+}
+
+@keyframes fieldShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.downloader__hint { color: var(--text-faint); }
+.downloader__hint.is-error { color: #ff8a8a; }
+
+/* ==========================================================
+   Instant link preview — appears right under the input as
+   soon as a track is detected from the pasted link, before
+   the user presses the submit button.
+   ========================================================== */
+.link-preview {
+  width: 100%;
+  max-width: 620px;
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-align: left;
+  animation: fadeIn 0.15s var(--ease);
+}
+
+.link-preview__loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dim);
+  font-size: 0.86rem;
+}
+
+.link-preview__spinner {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--accent-2);
+  animation: spin 0.7s linear infinite;
+}
+
+.link-preview__track {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.link-preview__cover {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--accent-grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.link-preview__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.link-preview__cover svg { opacity: 0.85; }
+
+.link-preview__info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.link-preview__title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.link-preview__artist {
+  margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.link-preview__duration {
+  flex: 0 0 auto;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.link-preview__error {
+  font-size: 0.86rem;
+  color: var(--text-dim);
+}
+
+/* supported services chip list */
+.services {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 10px;
+}
+
+.services__label {
+  font-size: 0.82rem;
+  color: var(--text-faint);
+  margin-right: 2px;
+}
+
+.service-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  transition: border-color 0.25s var(--ease), color 0.25s var(--ease), transform 0.25s var(--ease);
+}
+
+.service-chip:hover {
+  border-color: var(--chip-color, var(--border-strong));
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.service-chip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--chip-color, var(--accent-2));
+  flex: 0 0 auto;
+}
+
+@media (max-width: 560px) {
+  .services { justify-content: flex-start; }
+
+  .downloader__badge-name { display: none; }
+  .downloader__badge { padding: 8px; }
+  .downloader__field.has-badge .downloader__input { padding-right: 56px; }
+}
+
+.downloader__hint {
+  margin-top: 14px;
+  font-size: 0.86rem;
+  color: var(--text-faint);
+}
+
+/* Buttons */
+.btn {
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
+  transition: transform 0.2s var(--ease), box-shadow 0.3s var(--ease), background 0.3s var(--ease);
+}
+
+.btn--primary {
+  position: relative;
+  height: 58px;
+  padding: 0 32px;
+  flex: 0 0 auto;
+  color: #0A0C10;
+  background: var(--accent-grad);
+  background-size: 160% 160%;
+  box-shadow: var(--shadow-glow);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 150px;
+}
+
+.btn--primary:hover {
+  transform: translateY(-2px);
+  background-position: 100% 0;
+  box-shadow: 0 0 0 1px rgba(139, 107, 255, 0.25), 0 24px 70px -18px rgba(47, 224, 198, 0.45);
+}
+
+.btn--primary:active {
+  transform: translateY(0);
+}
+
+.btn__spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(10, 12, 16, 0.25);
+  border-top-color: #0A0C10;
+  animation: spin 0.7s linear infinite;
+}
+
+.downloader__submit.is-loading .btn__label { opacity: 0; position: absolute; }
+.downloader__submit.is-loading .btn__spinner { display: block; }
+.downloader__submit.is-loading { pointer-events: none; }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==========================================================
+   Result card
+   ========================================================== */
+.result {
+  width: 100%;
+  max-width: 620px;
+  margin-top: 28px;
+  overflow: hidden;
+}
+
+.result__card {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  text-align: left;
+  animation: cardIn 0.55s var(--ease);
+  box-shadow: 0 30px 70px -40px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.result__top {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.result__cover {
+  position: relative;
+  flex: 0 0 auto;
+  width: 68px;
+  height: 68px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result__cover-ring {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid transparent;
+  background: linear-gradient(var(--surface-2), var(--surface-2)) padding-box,
+              var(--accent-grad) border-box;
+  -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.result__info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.result__track {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.06rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result__artist {
+  margin-top: 3px;
+  color: var(--text-dim);
+  font-size: 0.92rem;
+}
+
+.result__meta {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.result__meta-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.result__meta-label {
+  color: var(--text-faint);
+  font-size: 0.78rem;
+}
+
+.dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.result__actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn--download,
+.btn--listen,
+.btn--playlist {
+  flex: 1 1 0;
+  height: 50px;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.94rem;
+}
+
+.btn--download {
+  color: #0A0C10;
+  background: var(--accent-grad);
+  background-size: 160% 160%;
+  box-shadow: var(--shadow-glow);
+}
+
+.btn--download:hover {
+  transform: translateY(-2px);
+  background-position: 100% 0;
+}
+
+.btn--listen {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+}
+
+.btn--listen:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-3);
+  color: var(--accent-3);
+  box-shadow: var(--shadow-glow-warm);
+}
+
+.btn--playlist {
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  color: var(--text-dim);
+}
+
+.btn--playlist:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-2);
+  color: var(--accent-2);
+}
+
+.btn--playlist.is-added {
+  border-style: solid;
+  border-color: transparent;
+  background: var(--accent-grad-warm);
+  color: #0A0C10;
+}
+
+.btn--playlist .icon-remove { display: none; }
+.btn--playlist.is-added .icon-add { display: none; }
+.btn--playlist.is-added .icon-remove { display: inline-flex; }
+
+@media (max-width: 560px) {
+  .result__actions { flex-direction: column; }
+  .btn--download, .btn--listen, .btn--playlist { width: 100%; }
+}
+
+/* ==========================================================
+   Search section — search by title / author
+   ========================================================== */
+.search {
+  padding-top: 96px;
+}
+
+.search__subtitle {
+  margin: 14px auto 0;
+  max-width: 52ch;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 1rem;
+}
+
+.search__panel {
+  margin: 40px auto 0;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* form reuses .downloader / .downloader__field / .btn--primary styles for visual consistency */
+.search__panel .downloader {
+  margin-top: 0;
+  justify-content: center;
+}
+
+.search__hint {
+  margin-top: 14px;
+  text-align: center;
+}
+
+/* loading status */
+.search__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 40px auto 0;
+  color: var(--text-dim);
+  font-size: 0.94rem;
+  animation: fadeIn 0.3s var(--ease);
+}
+
+.search__spinner-ring {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--accent-2);
+  animation: spin 0.7s linear infinite;
+  flex: 0 0 auto;
+}
+
+/* empty state */
+.search__empty {
+  max-width: 420px;
+  margin: 40px auto 0;
+  padding: 28px 24px;
+  text-align: center;
+  color: var(--text-dim);
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  font-size: 0.94rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* results grid */
+.track-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 40px;
+}
+
+.track-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 30px 70px -46px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  animation: cardIn 0.5s var(--ease) forwards;
+  animation-delay: var(--card-delay, 0s);
+  transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+}
+
+.track-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.track-card__top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.track-card__cover {
+  position: relative;
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--cover-a, var(--accent-1)), var(--cover-b, var(--accent-2)));
+}
+
+.track-card__cover svg {
+  opacity: 0.9;
+}
+
+.track-card__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.track-card__info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.track-card__title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.98rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-card__artist {
+  margin-top: 2px;
+  font-size: 0.86rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-card__duration {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}
+
+.track-card__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.track-card__btn {
+  flex: 1 1 0;
+  height: 42px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: var(--radius-sm);
+  font-size: 0.86rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), border-color 0.25s var(--ease), color 0.25s var(--ease), background 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+
+.track-card__btn--listen:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-3);
+  color: var(--accent-3);
+}
+
+.track-card__btn--listen.is-playing {
+  background: var(--accent-grad-warm);
+  border-color: transparent;
+  color: #0A0C10;
+}
+
+.track-card__btn--download {
+  color: #0A0C10;
+  background: var(--accent-grad);
+  border-color: transparent;
+}
+
+.track-card__btn--download:hover {
+  transform: translateY(-1px);
+  background-position: 100% 0;
+}
+
+.track-card__btn .icon-pause { display: none; }
+.track-card__btn.is-playing .icon-play { display: none; }
+.track-card__btn.is-playing .icon-pause { display: inline-flex; }
+
+.track-card__playlist-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), border-color 0.25s var(--ease), color 0.25s var(--ease), background 0.3s var(--ease);
+}
+
+.track-card__playlist-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-2);
+  color: var(--accent-2);
+}
+
+.track-card__playlist-btn.is-added {
+  border-style: solid;
+  border-color: transparent;
+  background: var(--accent-grad-warm);
+  color: #0A0C10;
+}
+
+.track-card__playlist-btn .icon-remove { display: none; }
+.track-card__playlist-btn.is-added .icon-add { display: none; }
+.track-card__playlist-btn.is-added .icon-remove { display: inline-flex; }
+
+@media (max-width: 560px) {
+  .track-grid { grid-template-columns: 1fr; }
+  .search { padding-top: 72px; }
+}
+
+/* ==========================================================
+   Scroll reveal
+   ========================================================== */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==========================================================
+   Section shell
+   ========================================================== */
+section {
+  padding: 96px 0;
+}
+
+.section-title {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+/* ==========================================================
+   How it works — steps
+   ========================================================== */
+.how {
+  border-top: 1px solid var(--border);
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 24px 0;
+  position: relative;
+}
+
+.step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 19px;
+  top: 56px;
+  bottom: -8px;
+  width: 1px;
+  background: var(--border);
+}
+
+.step__num {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--accent-2);
+}
+
+.step h3 {
+  font-size: 1.02rem;
+  font-weight: 600;
+}
+
+.step p {
+  margin-top: 4px;
+  color: var(--text-dim);
+  font-size: 0.92rem;
+}
+
+/* ==========================================================
+   FAQ
+   ========================================================== */
+.faq {
+  border-top: 1px solid var(--border);
+  background: var(--bg-soft);
+}
+
+.faq__list {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.faq-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.25s var(--ease);
+}
+
+.faq-item:hover {
+  border-color: var(--border-strong);
+}
+
+.faq-item__q {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.98rem;
+  padding: 18px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.faq-item__chevron {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-right: 1.6px solid var(--text-dim);
+  border-bottom: 1.6px solid var(--text-dim);
+  transform: rotate(45deg);
+  transition: transform 0.3s var(--ease);
+}
+
+.faq-item.is-open .faq-item__chevron {
+  transform: rotate(-135deg);
+}
+
+.faq-item__a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s var(--ease);
+}
+
+.faq-item__a p {
+  padding: 0 20px 18px;
+  color: var(--text-dim);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+/* ==========================================================
+   Footer
+   ========================================================== */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 36px 0;
+}
+
+.footer__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.footer__logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.footer p {
+  color: var(--text-faint);
+  font-size: 0.85rem;
+}
+
+/* ==========================================================
+   Toast
+   ========================================================== */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  padding: 14px 22px;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+  z-index: 200;
+  box-shadow: 0 20px 50px -18px rgba(0,0,0,0.6);
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ==========================================================
+   Mobile navigation
+   ========================================================== */
+@media (max-width: 760px) {
+  .navbar__burger { display: flex; }
+
+  .navbar__links {
+    position: fixed;
+    top: 72px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    background: rgba(10, 12, 16, 0.97);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px 20px;
+    transform: translateY(-12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
+  }
+
+  .navbar__links.is-open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .navbar__link {
+    padding: 12px 0;
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .hero { padding: 140px 0 90px; }
+  .downloader { flex-direction: column; }
+  .btn--primary { width: 100%; }
+}
+
+@media (max-width: 380px) {
+  .navbar__right { gap: 10px; }
+  .lang-switch__btn { padding: 5px 9px; font-size: 0.7rem; }
+}
+
+
+/* ==========================================================
+   Account button, auth modal, profile page
+   ========================================================== */
+[hidden] { display: none !important; }
+
+.account-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: border-color 0.25s var(--ease), color 0.25s var(--ease), transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+.account-btn:hover { color: var(--text); border-color: var(--accent-2); transform: translateY(-1px); }
+.account-btn__initial { display: none; }
+.account-btn.is-authed {
+  background: var(--accent-grad);
+  border-color: transparent;
+  color: #0A0C10;
+  box-shadow: var(--shadow-glow);
+}
+.account-btn.is-authed .account-btn__initial { display: block; }
+.account-btn.is-authed .account-btn__icon { display: none; }
+
+body.modal-open { overflow: hidden; }
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 6, 9, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fadeIn 0.25s var(--ease);
+}
+.modal__panel {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  max-height: calc(100% - 24px);
+  overflow-y: auto;
+  padding: 32px 28px 26px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glow);
+  animation: modalIn 0.35s var(--ease);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.modal__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+.modal__close:hover { background: var(--surface-2); color: var(--text); }
+
+.auth-title { font-size: 1.4rem; letter-spacing: -0.02em; margin-bottom: 20px; padding-right: 30px; }
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 22px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.auth-tab {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 9px 12px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-faint);
+  transition: color 0.25s var(--ease), background 0.25s var(--ease);
+}
+.auth-tab:hover:not(.is-active) { color: var(--text-dim); }
+.auth-tab.is-active { background: var(--accent-grad); color: #0A0C10; }
+
+.auth-field { display: block; margin-bottom: 14px; }
+.auth-field__label { display: block; margin-bottom: 6px; font-size: 0.82rem; font-weight: 500; color: var(--text-dim); }
+.auth-field__control { position: relative; }
+.auth-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.96rem;
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+.auth-input::placeholder { color: var(--text-faint); }
+.auth-input:focus { outline: none; border-color: var(--accent-1); box-shadow: 0 0 0 3px rgba(139, 107, 255, 0.2); }
+.auth-input--pw { padding-right: 46px; }
+.auth-pw-toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+.auth-pw-toggle:hover { color: var(--text); }
+.auth-hint { margin: -2px 0 14px; font-size: 0.8rem; color: var(--text-faint); }
+.auth-error { min-height: 0; margin: 0 0 12px; font-size: 0.86rem; color: var(--accent-3); }
+.auth-error:empty { display: none; }
+.auth-submit { width: 100%; min-width: 0; height: 52px; }
+.auth-submit[disabled] { opacity: 0.65; cursor: progress; }
+.auth-note { margin-top: 16px; font-size: 0.78rem; color: var(--text-faint); text-align: center; }
+
+.profile { padding-top: 132px; min-height: calc(100vh - 140px); }
+.profile__head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 28px;
+}
+.profile__avatar {
+  flex: 0 0 auto;
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-grad);
+  color: #0A0C10;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.7rem;
+  box-shadow: var(--shadow-glow);
+}
+.profile__meta { min-width: 0; flex: 1 1 auto; }
+.profile__name {
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  letter-spacing: -0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profile__sub { margin-top: 2px; font-size: 0.9rem; color: var(--text-dim); }
+.profile__logout {
+  flex: 0 0 auto;
+  padding: 10px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: color 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+.profile__logout:hover { color: var(--text); border-color: var(--accent-3); }
+
+.profile-tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.profile-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.96rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+  transition: color 0.25s var(--ease);
+}
+.profile-tab::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 2px;
+  background: var(--accent-grad);
+  transform: scaleX(0);
+  transition: transform 0.3s var(--ease);
+}
+.profile-tab:hover { color: var(--text-dim); }
+.profile-tab.is-active { color: var(--text); }
+.profile-tab.is-active::after { transform: scaleX(1); }
+.profile-tab__count {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 0.74rem;
+  text-align: center;
+}
+.profile-panel .track-grid { margin-top: 28px; }
+.profile-panel .search__empty { margin-top: 32px; }
+
+@media (max-width: 560px) {
+  .profile__head { flex-wrap: wrap; }
+  .profile__logout { margin-left: auto; }
+  .modal__panel { padding: 28px 20px 22px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<header class="navbar" id="navbar">
+  <div class="navbar__inner container">
+    <a href="#top" class="navbar__logo">
+      <span class="navbar__logo-mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M4 15V7.6L16 5v9.4" stroke="url(#logoGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="5.4" cy="16.4" r="2.4" stroke="url(#logoGrad)" stroke-width="1.8"/>
+          <circle cx="14.6" cy="14.6" r="2.4" stroke="url(#logoGrad)" stroke-width="1.8"/>
+          <defs>
+            <linearGradient id="logoGrad" x1="4" y1="5" x2="18" y2="18" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#8B6BFF"/>
+              <stop offset="1" stop-color="#2FE0C6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </span>
+      TuneVault
+    </a>
+
+    <nav class="navbar__links" id="navLinks">
+      <a href="#top" class="navbar__link" data-i18n="nav.home">Головна</a>
+      <a href="#search" class="navbar__link" data-i18n="nav.search">Пошук пісень</a>
+      <a href="#how" class="navbar__link" data-i18n="nav.how">Як це працює</a>
+      <a href="#faq" class="navbar__link" data-i18n="nav.faq">FAQ</a>
+    </nav>
+
+    <div class="navbar__right">
+      <div class="lang-switch" id="langSwitch" role="group" aria-label="Мова / Language">
+        <button type="button" class="lang-switch__btn is-active" id="langUk" data-lang="uk" aria-pressed="true">UA</button>
+        <button type="button" class="lang-switch__btn" id="langEn" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+
+      <button type="button" class="account-btn" id="accountBtn" aria-label="Войти в аккаунт">
+        <svg class="account-btn__icon" width="19" height="19" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle cx="10" cy="6.8" r="3.4" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M3.4 16.6c.7-3 3.3-4.6 6.6-4.6s5.9 1.6 6.6 4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span class="account-btn__initial" aria-hidden="true"></span>
+      </button>
+
+      <button class="navbar__burger" id="burgerBtn" aria-label="Відкрити меню" data-i18n-aria="nav.burger" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<main id="viewHome">
+<section class="hero" id="top">
+  <div class="hero__waves" aria-hidden="true" id="heroWaves"></div>
+
+  <div class="container hero__inner">
+    <p class="eyebrow" data-i18n="hero.eyebrow">Завантаження за посиланням за секунди</p>
+    <h1 class="hero__title" data-i18n-html="hero.title">Завантажуйте музику<br>легко й швидко</h1>
+    <p class="hero__subtitle" data-i18n="hero.subtitle">Вставте посилання на трек і отримайте його за кілька секунд</p>
+
+    <form class="downloader" id="downloadForm" novalidate>
+      <div class="downloader__field" id="downloaderField">
+        <svg class="downloader__icon" id="downloaderIcon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M8.4 11.6a2.8 2.8 0 0 0 4.1.2l2.3-2.3a2.9 2.9 0 0 0-4.1-4.1l-1.3 1.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M11.6 8.4a2.8 2.8 0 0 0-4.1-.2L5.2 10.5a2.9 2.9 0 0 0 4.1 4.1l1.3-1.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <input
+          type="text"
+          id="linkInput"
+          class="downloader__input"
+          placeholder="Вставте посилання на музику..."
+          data-i18n-placeholder="form.placeholder"
+          autocomplete="off"
+          spellcheck="false"
+          required
+        >
+        <span class="downloader__badge" id="serviceBadge" aria-hidden="true">
+          <span class="downloader__badge-dot" id="serviceBadgeDot"></span>
+          <span class="downloader__badge-name" id="serviceBadgeName"></span>
+        </span>
+      </div>
+      <button type="submit" class="btn btn--primary downloader__submit" id="submitBtn">
+        <span class="btn__label" data-i18n="form.submit">Завантажити</span>
+        <span class="btn__spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+
+    <!-- ===== INSTANT LINK PREVIEW ===== -->
+    <div class="link-preview" id="linkPreview" hidden aria-live="polite">
+      <div class="link-preview__loading" id="linkPreviewLoading" hidden>
+        <span class="link-preview__spinner" aria-hidden="true"></span>
+        <span data-i18n="preview.loading">Визначаємо трек…</span>
+      </div>
+      <div class="link-preview__track" id="linkPreviewTrack" hidden>
+        <div class="link-preview__cover">
+          <img id="linkPreviewCoverImg" alt="" hidden loading="lazy">
+          <svg id="linkPreviewCoverFallback" width="18" height="18" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+            <path d="M24 20v18.2a5.4 5.4 0 1 0 2.6 4.6V26l14-3.2v13a5.4 5.4 0 1 0 2.6 4.6V15L24 20z" fill="#0A0C10"/>
+          </svg>
+        </div>
+        <div class="link-preview__info">
+          <p class="link-preview__title" id="linkPreviewTitle"></p>
+          <p class="link-preview__artist" id="linkPreviewArtist"></p>
+        </div>
+        <span class="link-preview__duration" id="linkPreviewDuration"></span>
+      </div>
+      <p class="link-preview__error" id="linkPreviewError" hidden></p>
+    </div>
+
+    <p class="downloader__hint" id="formHint">Підтримуються посилання на треки з більшості музичних сервісів</p>
+
+    <div class="services" id="servicesList">
+      <span class="services__label" data-i18n="form.supported_label">Підтримуються:</span>
+      <!-- chips are rendered by JS from the SERVICES list -->
+    </div>
+
+    <!-- ===== RESULT CARD ===== -->
+    <div class="result" id="resultCard" hidden>
+      <div class="result__card" data-reveal>
+        <div class="result__top">
+          <div class="result__cover">
+            <svg viewBox="0 0 64 64" width="34" height="34" fill="none" aria-hidden="true">
+              <path d="M24 20v18.2a5.4 5.4 0 1 0 2.6 4.6V26l14-3.2v13a5.4 5.4 0 1 0 2.6 4.6V15L24 20z" fill="url(#coverGrad)"/>
+              <defs>
+                <linearGradient id="coverGrad" x1="24" y1="15" x2="43.2" y2="47.4" gradientUnits="userSpaceOnUse">
+                  <stop id="coverGradStart" style="stop-color:#B9A6FF"/>
+                  <stop id="coverGradEnd" offset="1" style="stop-color:#6DF0DC"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span class="result__cover-ring" aria-hidden="true"></span>
+          </div>
+          <div class="result__info">
+            <p class="result__track" id="resultTrack">Midnight Echoes</p>
+            <p class="result__artist" id="resultArtist">Nova Sky</p>
+            <div class="result__meta">
+              <span class="result__meta-item">
+                <span class="result__meta-label" data-i18n="result.duration">Тривалість</span>
+                <span id="resultDuration">3:42</span>
+              </span>
+              <span class="dot" aria-hidden="true"></span>
+              <span class="result__meta-item">
+                <span class="result__meta-label" data-i18n="result.quality">Якість</span>
+                <span id="resultQuality">MP3 · 320 kbps</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="result__actions">
+          <button class="btn btn--download" id="downloadMp3Btn">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <path d="M9 2v9.5m0 0 3.5-3.6M9 11.5 5.5 7.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 13.5v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <span data-i18n="result.download">Завантажити</span>
+          </button>
+          <button class="btn btn--listen" id="listenBtn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4.5 3.2v9.6a.8.8 0 0 0 1.22.68l7.6-4.8a.8.8 0 0 0 0-1.36l-7.6-4.8A.8.8 0 0 0 4.5 3.2Z" fill="currentColor"/>
+            </svg>
+            <span data-i18n="result.listen">Слухати</span>
+          </button>
+          <button class="btn btn--playlist" id="playlistBtn">
+            <svg class="icon-add" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 3.2v9.6M3.2 8h9.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <svg class="icon-remove" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 4.6h8M6.6 4.6V3.4a1 1 0 0 1 1-1h.8a1 1 0 0 1 1 1v1.2M5.2 4.6l.5 8a1 1 0 0 0 1 .9h2.6a1 1 0 0 0 1-.9l.5-8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span data-i18n="result.add_to_playlist" id="playlistBtnLabel">Додати до плейлиста</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SEARCH BY TITLE / AUTHOR ===== -->
+<section class="search" id="search">
+  <div class="container">
+    <h2 class="section-title" data-reveal data-i18n="search.title">Знайти пісню</h2>
+    <p class="search__subtitle" data-reveal data-i18n="search.subtitle">Шукайте за назвою треку та виконавцем</p>
+
+    <div class="search__panel" data-reveal>
+      <form class="downloader" id="searchForm" novalidate>
+        <div class="downloader__field" id="searchField">
+          <svg class="downloader__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="8.3" cy="8.3" r="5.3" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M16.2 16.2 12.9 12.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <input
+            type="text"
+            id="searchInput"
+            class="downloader__input"
+            placeholder="Наприклад: Nova Sky Midnight"
+            data-i18n-placeholder="search.placeholder_title"
+            autocomplete="off"
+            spellcheck="false"
+          >
+        </div>
+        <button type="submit" class="btn btn--primary downloader__submit" id="searchSubmitBtn">
+          <span class="btn__label" data-i18n="search.submit">Знайти</span>
+          <span class="btn__spinner" aria-hidden="true"></span>
+        </button>
+      </form>
+      <p class="downloader__hint search__hint" id="searchHint" data-i18n="search.hint_title">Введіть назву треку та виконавця</p>
+    </div>
+
+    <div class="search__status" id="searchStatus" hidden>
+      <span class="search__spinner-ring" aria-hidden="true"></span>
+      <span data-i18n="search.loading">Шукаємо відповідні треки…</span>
+    </div>
+
+    <p class="search__empty" id="searchEmpty" hidden data-i18n="search.empty">Нічого не знайдено. Спробуйте інший запит.</p>
+
+    <p class="search__subtitle" id="searchPreviewNote" hidden data-i18n="search.preview_note">Превʼю надає каталог iTunes, і воно інколи починається не з початку треку (наприклад, одразу з приспіву) — це обмеження джерела, а не помилка плеєра.</p>
+
+    <div class="track-grid" id="searchResults"></div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="how" id="how">
+  <div class="container">
+    <h2 class="section-title" data-reveal data-i18n="how.title">Як це працює</h2>
+    <ol class="steps">
+      <li class="step" data-reveal>
+        <span class="step__num">1</span>
+        <div>
+          <h3 data-i18n="how.step1.title">Скопіюйте посилання</h3>
+          <p data-i18n="how.step1.desc">Знайдіть потрібний трек і скопіюйте посилання на нього.</p>
+        </div>
+      </li>
+      <li class="step" data-reveal>
+        <span class="step__num">2</span>
+        <div>
+          <h3 data-i18n="how.step2.title">Вставте його в поле</h3>
+          <p data-i18n="how.step2.desc">Вставте посилання в поле на головній сторінці.</p>
+        </div>
+      </li>
+      <li class="step" data-reveal>
+        <span class="step__num">3</span>
+        <div>
+          <h3 data-i18n="how.step3.title">Натисніть «Завантажити»</h3>
+          <p data-i18n="how.step3.desc">Отримайте готовий файл у форматі MP3 за кілька секунд.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="faq" id="faq">
+  <div class="container">
+    <h2 class="section-title" data-reveal data-i18n="faq.title">Часті запитання</h2>
+    <div class="faq__list" data-reveal>
+      <div class="faq-item">
+        <button class="faq-item__q">
+          <span data-i18n="faq.q1">Це безкоштовно?</span>
+          <span class="faq-item__chevron"></span>
+        </button>
+        <div class="faq-item__a"><p data-i18n="faq.a1">Так, базове завантаження треків повністю безкоштовне.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__q">
+          <span data-i18n="faq.q2">Які посилання підтримуються?</span>
+          <span class="faq-item__chevron"></span>
+        </button>
+        <div class="faq-item__a"><p data-i18n="faq.a2">Посилання на треки з більшості популярних музичних сервісів.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__q">
+          <span data-i18n="faq.q3">У якому форматі завантажується файл?</span>
+          <span class="faq-item__chevron"></span>
+        </button>
+        <div class="faq-item__a"><p data-i18n="faq.a3">Файл зберігається у форматі MP3 з гарним бітрейтом.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-item__q">
+          <span data-i18n="faq.q4">Чи потрібно встановлювати застосунок?</span>
+          <span class="faq-item__chevron"></span>
+        </button>
+        <div class="faq-item__a"><p data-i18n="faq.a4">Ні, усе працює прямо в браузері — на телефоні й комп’ютері.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ===== PROFILE VIEW (account page) ===== -->
+<main id="viewProfile" hidden>
+  <section class="profile" id="profile">
+    <div class="container">
+      <div class="profile__head">
+        <div class="profile__avatar" id="profileAvatar" aria-hidden="true"></div>
+        <div class="profile__meta">
+          <h1 class="profile__name" id="profileName"></h1>
+          <p class="profile__sub" id="profileSub"></p>
+        </div>
+        <button type="button" class="profile__logout" id="logoutBtn" data-i18n="profile.logout">Вийти</button>
+      </div>
+
+      <div class="profile-tabs" role="tablist">
+        <button type="button" class="profile-tab is-active" role="tab" id="tabPlaylist" data-tab="playlist" aria-selected="true" aria-controls="panelPlaylist">
+          <span data-i18n="profile.tab_playlist">Плейлист</span>
+          <span class="profile-tab__count" id="playlistCount">0</span>
+        </button>
+      </div>
+
+      <div class="profile-panel" id="panelPlaylist" role="tabpanel" data-panel="playlist" aria-labelledby="tabPlaylist">
+        <p class="search__empty" id="playlistEmpty" data-i18n="profile.empty">Плейлист поки порожній. Знайдіть трек і натисніть «Додати до плейлиста».</p>
+        <div class="track-grid" id="playlistGrid"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ===== AUTH MODAL ===== -->
+<div class="modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle" hidden>
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__panel">
+    <button type="button" class="modal__close" data-close data-i18n-aria="auth.close" aria-label="Закрити">&times;</button>
+    <h2 class="auth-title" id="authTitle" data-i18n="auth.title_login">Вхід в акаунт</h2>
+
+    <div class="auth-tabs" role="tablist">
+      <button type="button" class="auth-tab is-active" role="tab" data-mode="login" data-i18n="auth.tab_login">Вхід</button>
+      <button type="button" class="auth-tab" role="tab" data-mode="register" data-i18n="auth.tab_register">Реєстрація</button>
+    </div>
+
+    <form id="authForm" novalidate>
+      <label class="auth-field">
+        <span class="auth-field__label" data-i18n="auth.login_label">Логін</span>
+        <input class="auth-input" id="authLogin" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20" data-i18n-placeholder="auth.login_ph" placeholder="Ваш логін">
+      </label>
+
+      <label class="auth-field">
+        <span class="auth-field__label" data-i18n="auth.password_label">Пароль</span>
+        <span class="auth-field__control">
+          <input class="auth-input auth-input--pw" id="authPassword" type="password" autocomplete="current-password" maxlength="64" data-i18n-placeholder="auth.password_ph" placeholder="Ваш пароль">
+          <button type="button" class="auth-pw-toggle" id="authPwToggle" data-i18n-aria="auth.toggle_pw" aria-label="Показати або приховати пароль">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M1.8 10S5 4.6 10 4.6 18.2 10 18.2 10 15 15.4 10 15.4 1.8 10 1.8 10Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              <circle cx="10" cy="10" r="2.4" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+          </button>
+        </span>
+      </label>
+
+      <label class="auth-field" id="authConfirmWrap" hidden>
+        <span class="auth-field__label" data-i18n="auth.confirm_label">Повторіть пароль</span>
+        <input class="auth-input" id="authConfirm" type="password" autocomplete="new-password" maxlength="64" data-i18n-placeholder="auth.confirm_ph" placeholder="Повторіть пароль">
+      </label>
+
+      <p class="auth-hint" id="authHint" data-i18n="auth.hint_register" hidden>Логін: 3–20 символів (літери, цифри, _ . -). Пароль: від 6 символів.</p>
+      <p class="auth-error" id="authError" role="alert"></p>
+
+      <button type="button" class="btn btn--primary auth-submit" id="authSubmit" data-i18n="auth.submit_login">Увійти</button>
+    </form>
+
+    <p class="auth-note" id="authNote" data-i18n="auth.note">Акаунт зберігається лише в цьому браузері</p>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <span class="footer__logo">TuneVault</span>
+    <p data-i18n="footer.note">Прослуховування й завантаження використовують офіційний публічний каталог iTunes Search API — доступні лише 30-секундні превʼю треків, повні файли з платних стрімінгових сервісів не надаються.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ==========================================================
+// TuneVault — frontend logic (real title/author search via iTunes Search API; link download remains a demo, no backend)
+// ==========================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+  initLanguage();
+  initNavbarScrollState();
+  initMobileMenu();
+  buildHeroWaves();
+  initScrollReveal();
+  renderServiceChips();
+  initServiceDetection();
+  initLinkAutoPreview();
+  initDownloadForm();
+  initFaqAccordion();
+  initDownloadMp3Button();
+  initListenButton();
+  initPlaylistButton();
+  initSearchForm();
+  renderPlaylist();
+  initAccount();
+});
+
+/* ==========================================================
+   i18n — translations for RU / EN
+   ========================================================== */
+const TRANSLATIONS = {
+  uk: {
+    "nav.home": "Головна",
+    "nav.search": "Пошук пісень",
+    "nav.profile": "Профіль",
+    "nav.how": "Як це працює",
+    "nav.faq": "FAQ",
+    "nav.burger": "Відкрити меню",
+    "hero.eyebrow": "Завантаження за посиланням за секунди",
+    "hero.title": "Завантажуйте музику<br>легко й швидко",
+    "hero.subtitle": "Вставте посилання на трек і отримайте його за кілька секунд",
+    "form.placeholder": "Вставте посилання на музику...",
+    "form.submit": "Завантажити",
+    "form.hint": "Підтримуються посилання на треки з більшості музичних сервісів",
+    "form.hint_error": "Спочатку вставте посилання на трек",
+    "form.hint_invalid": "Таке посилання не схоже на трек із підтримуваного майданчика",
+    "form.hint_resolving": "Шукаємо трек за посиланням…",
+    "form.hint_unresolved": "Не вдалося отримати трек напряму за цим посиланням — пряме завантаження з цього сервісу поки не підтримується офіційними відкритими API. Спробуйте знайти трек за назвою в розділі «Знайти пісню» нижче.",
+    "preview.loading": "Визначаємо трек…",
+    "preview.not_found": "Трек не знайдено в каталозі iTunes — можливо, його там просто немає (незалежний реліз, кавер або трек без офіційного релізу на майданчиках)",
+    "preview.lookup_failed": "Не вдалося отримати дані за посиланням: сервіс не відповів або посилання хибне. Перевірте посилання й повторіть спробу.",
+    "form.hint_lookup_failed": "Не вдалося отримати дані за посиланням: сервіс не відповів або посилання хибне. Перевірте посилання й повторіть спробу.",
+    "toast.save_failed": "Не вдалося зберегти плейлист на сервері — зміни можуть зникнути після перезавантаження",
+    "preview.manual_only": "Для цього сервісу немає миттєвого превʼю — натисніть «Завантажити», щоб знайти трек",
+    "form.supported_label": "Підтримуються:",
+    "result.duration": "Тривалість",
+    "result.quality": "Якість",
+    "result.download": "Завантажити",
+    "result.listen": "Слухати",
+    "result.add_to_playlist": "Додати до плейлиста",
+    "result.in_playlist": "Прибрати з плейлиста",
+    "search.title": "Знайти пісню",
+    "search.subtitle": "Шукайте за назвою треку та виконавцем",
+    "search.placeholder_title": "Наприклад: Nova Sky Midnight",
+    "search.submit": "Знайти",
+    "search.hint_title": "Введіть назву треку та виконавця",
+    "search.hint_error": "Спочатку введіть запит для пошуку",
+    "search.loading": "Шукаємо відповідні треки…",
+    "search.empty": "Нічого не знайдено. Спробуйте інший запит.",
+    "search.error": "Не вдалося отримати результати. Перевірте зʼєднання з інтернетом і повторіть спробу.",
+    "search.preview_label": "Превʼю 30 с",
+    "search.preview_note": "Превʼю надає каталог iTunes, і воно інколи починається не з початку треку (наприклад, одразу з приспіву) — це обмеження джерела, а не помилка плеєра.",
+    "track.listen": "Слухати",
+    "track.pause": "Пауза",
+    "track.download": "Завантажити",
+    "track.add_to_playlist": "До плейлиста",
+    "track.in_playlist": "Прибрати",
+    "profile.title": "Профіль",
+    "account.login": "Увійти в акаунт",
+    "account.open_profile": "Відкрити профіль",
+    "auth.title_login": "Вхід в акаунт",
+    "auth.title_register": "Створити акаунт",
+    "auth.tab_login": "Вхід",
+    "auth.tab_register": "Реєстрація",
+    "auth.login_label": "Логін",
+    "auth.password_label": "Пароль",
+    "auth.confirm_label": "Повторіть пароль",
+    "auth.login_ph": "Ваш логін",
+    "auth.password_ph": "Ваш пароль",
+    "auth.confirm_ph": "Повторіть пароль",
+    "auth.submit_login": "Увійти",
+    "auth.submit_register": "Створити акаунт",
+    "auth.hint_register": "Логін: 3–20 символів (літери, цифри, _ . -). Пароль: від 6 символів.",
+    "auth.note": "Акаунт зберігається лише в цьому браузері",
+    "auth.close": "Закрити",
+    "auth.toggle_pw": "Показати або приховати пароль",
+    "auth.err_empty": "Введіть логін і пароль",
+    "auth.err_format": "Логін: 3–20 символів — літери, цифри, _ . -",
+    "auth.err_pw_short": "Пароль має бути не коротшим за 6 символів",
+    "auth.err_pw_match": "Паролі не збігаються",
+    "auth.err_taken": "Такий логін уже зайнятий",
+    "auth.err_wrong": "Неправильний логін або пароль",
+    "auth.err_generic": "Щось пішло не так, спробуйте ще раз",
+    "auth.err_many": "Забагато спроб — зачекайте кілька хвилин",
+    "auth.err_server": "Сервер не відповідає, спробуйте пізніше",
+    "auth.note_server": "Акаунт зберігається в базі даних TuneVault",
+    "profile.logout": "Вийти",
+    "profile.tab_playlist": "Плейлист",
+    "profile.count": "Треків у плейлисті:",
+    "toast.login_required": "Увійдіть в акаунт, щоб додавати треки до плейлиста",
+    "toast.registered": "Акаунт створено — ласкаво просимо!",
+    "toast.logged_in": "Ви увійшли в акаунт",
+    "toast.logged_out": "Ви вийшли з акаунта",
+    "profile.subtitle": "Ваш особистий плейлист — додавайте сюди знайдені та завантажені треки",
+    "profile.empty": "Плейлист поки порожній. Знайдіть трек і натисніть «Додати до плейлиста».",
+    "toast.playlist_added": "Додано до плейлиста",
+    "toast.playlist_removed": "Видалено з плейлиста",
+    "how.title": "Як це працює",
+    "how.step1.title": "Скопіюйте посилання",
+    "how.step1.desc": "Знайдіть потрібний трек і скопіюйте посилання на нього.",
+    "how.step2.title": "Вставте його в поле",
+    "how.step2.desc": "Вставте посилання в поле на головній сторінці.",
+    "how.step3.title": "Натисніть «Завантажити»",
+    "how.step3.desc": "Отримайте готовий файл у форматі MP3 за кілька секунд.",
+    "faq.title": "Часті запитання",
+    "faq.q1": "Це безкоштовно?",
+    "faq.a1": "Так, базове завантаження треків повністю безкоштовне.",
+    "faq.q2": "Які посилання підтримуються?",
+    "faq.a2": "Посилання на треки з більшості популярних музичних сервісів.",
+    "faq.q3": "У якому форматі завантажується файл?",
+    "faq.a3": "Файл зберігається у форматі MP3 з гарним бітрейтом.",
+    "faq.q4": "Чи потрібно встановлювати застосунок?",
+    "faq.a4": "Ні, усе працює прямо в браузері — на телефоні й комп’ютері.",
+    "footer.note": "Прослуховування й завантаження використовують офіційний публічний каталог iTunes Search API — доступні лише 30-секундні превʼю треків, повні файли з платних стрімінгових сервісів не надаються.",
+    "toast.download": "Завантажуємо доступне превʼю треку (30 с)…",
+    "toast.download_opened": "Не вдалося завантажити файл напряму — превʼю відкрито в новій вкладці, збережіть його звідти",
+    "toast.listen": "Відтворюємо доступне превʼю треку",
+    "toast.preview_error": "Превʼю поки недоступне для цього треку",
+    "page.title": "TuneVault — Завантажуйте музику легко й швидко"
+  },
+  en: {
+    "nav.home": "Home",
+    "nav.search": "Find songs",
+    "nav.profile": "Profile",
+    "nav.how": "How it works",
+    "nav.faq": "FAQ",
+    "nav.burger": "Open menu",
+    "hero.eyebrow": "Downloading from a link in seconds",
+    "hero.title": "Download music<br>easily and fast",
+    "hero.subtitle": "Paste a track link and get it in a few seconds",
+    "form.placeholder": "Paste a music link...",
+    "form.submit": "Download",
+    "form.hint": "Links from most music services are supported",
+    "form.hint_error": "Paste a track link first",
+    "form.hint_invalid": "This link doesn't look like a track from a supported service",
+    "form.hint_resolving": "Looking up the track from your link…",
+    "form.hint_unresolved": "Couldn't resolve a track directly from this link — direct downloads from this service aren't available through official open APIs yet. Try searching by title in the “Find a song” section below.",
+    "preview.loading": "Detecting the track…",
+    "preview.not_found": "Track not found in the iTunes catalog — it may simply not be listed there (an independent release, a cover, or a track without an official release on streaming platforms)",
+    "preview.lookup_failed": "Couldn't get data for this link: the service didn't respond or the link is invalid. Check the link and try again.",
+    "form.hint_lookup_failed": "Couldn't get data for this link: the service didn't respond or the link is invalid. Check the link and try again.",
+    "toast.save_failed": "Couldn't save the playlist to the server — changes may be lost after a reload",
+    "preview.manual_only": "Instant preview isn't available for this service — press “Download” to search for it",
+    "form.supported_label": "Supported:",
+    "result.duration": "Duration",
+    "result.quality": "Quality",
+    "result.download": "Download",
+    "result.listen": "Listen",
+    "result.add_to_playlist": "Add to playlist",
+    "result.in_playlist": "Remove from playlist",
+    "search.title": "Find a song",
+    "search.subtitle": "Search by track title and artist",
+    "search.placeholder_title": "e.g. Nova Sky Midnight",
+    "search.submit": "Search",
+    "search.hint_title": "Enter a track title and artist",
+    "search.hint_error": "Enter a search query first",
+    "search.loading": "Looking for matching tracks…",
+    "search.empty": "Nothing found. Try a different search.",
+    "search.error": "Couldn't fetch results. Check your internet connection and try again.",
+    "search.preview_label": "30-sec preview",
+    "search.preview_note": "Previews are provided by the iTunes catalog and sometimes don't start at the very beginning of the track (e.g. jumping straight to the chorus) — that's a limitation of the source, not a player bug.",
+    "track.listen": "Listen",
+    "track.pause": "Pause",
+    "track.download": "Download",
+    "track.add_to_playlist": "Add",
+    "track.in_playlist": "Remove",
+    "profile.title": "Profile",
+    "account.login": "Log in",
+    "account.open_profile": "Open profile",
+    "auth.title_login": "Log in",
+    "auth.title_register": "Create an account",
+    "auth.tab_login": "Log in",
+    "auth.tab_register": "Sign up",
+    "auth.login_label": "Username",
+    "auth.password_label": "Password",
+    "auth.confirm_label": "Repeat password",
+    "auth.login_ph": "Your username",
+    "auth.password_ph": "Your password",
+    "auth.confirm_ph": "Repeat password",
+    "auth.submit_login": "Log in",
+    "auth.submit_register": "Create account",
+    "auth.hint_register": "Username: 3–20 characters (letters, digits, _ . -). Password: at least 6 characters.",
+    "auth.note": "Your account is stored only in this browser",
+    "auth.close": "Close",
+    "auth.toggle_pw": "Show or hide password",
+    "auth.err_empty": "Enter your username and password",
+    "auth.err_format": "Username: 3–20 characters — letters, digits, _ . -",
+    "auth.err_pw_short": "Password must be at least 6 characters",
+    "auth.err_pw_match": "Passwords don't match",
+    "auth.err_taken": "This username is already taken",
+    "auth.err_wrong": "Wrong username or password",
+    "auth.err_generic": "Something went wrong, please try again",
+    "auth.err_many": "Too many attempts — please wait a few minutes",
+    "auth.err_server": "The server isn't responding, try again later",
+    "auth.note_server": "Your account is stored in the TuneVault database",
+    "profile.logout": "Log out",
+    "profile.tab_playlist": "Playlist",
+    "profile.count": "Tracks in playlist:",
+    "toast.login_required": "Log in to add tracks to your playlist",
+    "toast.registered": "Account created — welcome!",
+    "toast.logged_in": "You're logged in",
+    "toast.logged_out": "You've logged out",
+    "profile.subtitle": "Your personal playlist — add tracks you find or download here",
+    "profile.empty": "Your playlist is empty. Find a track and press “Add to playlist”.",
+    "toast.playlist_added": "Added to playlist",
+    "toast.playlist_removed": "Removed from playlist",
+    "how.title": "How it works",
+    "how.step1.title": "Copy the link",
+    "how.step1.desc": "Find the track you need and copy its link.",
+    "how.step2.title": "Paste it in the field",
+    "how.step2.desc": "Paste the link into the field on the homepage.",
+    "how.step3.title": "Press \u201cDownload\u201d",
+    "how.step3.desc": "Get the finished MP3 file in a few seconds.",
+    "faq.title": "Frequently asked questions",
+    "faq.q1": "Is it free?",
+    "faq.a1": "Yes, basic track downloads are completely free.",
+    "faq.q2": "Which links are supported?",
+    "faq.a2": "Links to tracks from most popular music services.",
+    "faq.q3": "What format is the file downloaded in?",
+    "faq.a3": "The file is saved as MP3 with a good bitrate.",
+    "faq.q4": "Do I need to install an app?",
+    "faq.a4": "No, everything works right in the browser — on phone and computer.",
+    "footer.note": "Listening and downloading use the official public iTunes Search API — only 30-second track previews are available; full files from paid streaming services aren't provided.",
+    "toast.download": "Downloading the available track preview (30 sec)…",
+    "toast.download_opened": "Couldn't download the file directly — the preview was opened in a new tab, save it from there",
+    "toast.listen": "Playing the available track preview",
+    "toast.preview_error": "Preview isn't available for this track yet",
+    "page.title": "TuneVault — Download music easily and fast"
+  }
+};
+
+let currentLang = "uk";
+
+function initLanguage() {
+  const stored = window.localStorage ? window.localStorage.getItem("musicsave_lang") : null;
+  currentLang = stored === "en" ? "en" : "uk"; // default Ukrainian; old stored "ru" values migrate to "uk"
+
+  applyLanguage(currentLang);
+
+  const langUk = document.getElementById("langUk");
+  const langEn = document.getElementById("langEn");
+
+  langUk.addEventListener("click", () => setLanguage("uk"));
+  langEn.addEventListener("click", () => setLanguage("en"));
+}
+
+function setLanguage(lang) {
+  if (lang === currentLang) return;
+  currentLang = lang;
+  applyLanguage(lang);
+
+  try {
+    window.localStorage.setItem("musicsave_lang", lang);
+  } catch (e) {
+    /* localStorage may be unavailable — ignore */
+  }
+}
+
+function applyLanguage(lang) {
+  const dict = TRANSLATIONS[lang];
+
+  document.documentElement.lang = lang === "en" ? "en" : "uk";
+  document.title = dict["page.title"];
+
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    if (dict[key] !== undefined) el.textContent = dict[key];
+  });
+
+  // if a preview is currently playing, keep its label showing "pause" instead
+  // of reverting to "listen" after the generic data-i18n pass above
+  const playingListenBtn = document.getElementById("listenBtn");
+  if (playingListenBtn && playingListenBtn.classList.contains("is-playing")) {
+    const label = playingListenBtn.querySelector("span[data-i18n]");
+    if (label) label.textContent = dict["track.pause"];
+  }
+
+  // same idea for the hero card's add/remove-playlist button
+  const playlistBtn = document.getElementById("playlistBtn");
+  if (playlistBtn) {
+    setHeroPlaylistButtonState(playlistBtn.classList.contains("is-added"));
+  }
+
+  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-html");
+    if (dict[key] !== undefined) el.innerHTML = dict[key];
+  });
+
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    if (dict[key] !== undefined) el.setAttribute("placeholder", dict[key]);
+  });
+
+  document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-aria");
+    if (dict[key] !== undefined) el.setAttribute("aria-label", dict[key]);
+  });
+
+  const langSwitch = document.getElementById("langSwitch");
+  const langUk = document.getElementById("langUk");
+  const langEn = document.getElementById("langEn");
+  langSwitch.setAttribute("data-active", lang);
+  langUk.classList.toggle("is-active", lang === "uk");
+  langEn.classList.toggle("is-active", lang === "en");
+  langUk.setAttribute("aria-pressed", String(lang === "uk"));
+  langEn.setAttribute("aria-pressed", String(lang === "en"));
+
+  // refresh the hint text according to its current state (default / error)
+  const hint = document.getElementById("formHint");
+  if (hint) {
+    const key = hint.dataset.hintKey || "form.hint";
+    hint.textContent = dict[key];
+  }
+
+  // refresh the search hint / placeholder according to the active mode
+  const searchHint = document.getElementById("searchHint");
+  if (searchHint) {
+    const key = searchHint.dataset.hintKey || "search.hint_title";
+    searchHint.textContent = dict[key];
+  }
+  const searchEmpty = document.getElementById("searchEmpty");
+  if (searchEmpty && searchEmpty.dataset.emptyKey) {
+    searchEmpty.textContent = dict[searchEmpty.dataset.emptyKey];
+  }
+
+  // account button, profile header, auth modal
+  if (typeof refreshAccountUI === "function") refreshAccountUI();
+
+  // refresh the currently detected service badge label, if any
+  const badgeName = document.getElementById("serviceBadgeName");
+  if (badgeName && badgeName.dataset.serviceId) {
+    const service = SERVICES.find((s) => s.id === badgeName.dataset.serviceId);
+    if (service) badgeName.textContent = service.name;
+  }
+}
+
+/* ---------- Navbar background on scroll ---------- */
+function initNavbarScrollState() {
+  const navbar = document.getElementById("navbar");
+  const onScroll = () => {
+    navbar.classList.toggle("is-scrolled", window.scrollY > 8);
+  };
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+}
+
+/* ---------- Mobile hamburger menu ---------- */
+function initMobileMenu() {
+  const burger = document.getElementById("burgerBtn");
+  const links = document.getElementById("navLinks");
+
+  burger.addEventListener("click", () => {
+    const isOpen = links.classList.toggle("is-open");
+    burger.setAttribute("aria-expanded", String(isOpen));
+  });
+
+  links.querySelectorAll(".navbar__link").forEach((link) => {
+    link.addEventListener("click", () => {
+      links.classList.remove("is-open");
+      burger.setAttribute("aria-expanded", "false");
+    });
+  });
+}
+
+/* ---------- Generate decorative animated waveform bars ---------- */
+function buildHeroWaves() {
+  const wrap = document.getElementById("heroWaves");
+  if (!wrap) return;
+
+  const barCount = 46;
+  const fragment = document.createDocumentFragment();
+
+  for (let i = 0; i < barCount; i++) {
+    const bar = document.createElement("span");
+    const height = 30 + Math.round(Math.random() * 160);
+    const duration = (1.8 + Math.random() * 1.6).toFixed(2);
+    const delay = (Math.random() * 1.6).toFixed(2);
+    bar.style.height = `${height}px`;
+    bar.style.animationDuration = `${duration}s`;
+    bar.style.animationDelay = `${delay}s`;
+    fragment.appendChild(bar);
+  }
+
+  wrap.appendChild(fragment);
+}
+
+/* ---------- Reveal sections on scroll ---------- */
+function initScrollReveal() {
+  const targets = document.querySelectorAll("[data-reveal]");
+  if (!("IntersectionObserver" in window) || targets.length === 0) {
+    targets.forEach((el) => el.classList.add("is-visible"));
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+  );
+
+  targets.forEach((el) => observer.observe(el));
+}
+
+/* ==========================================================
+   Supported services — detection by link domain
+   ========================================================== */
+const SERVICES = [
+  { id: "spotify", name: "Spotify", domains: ["open.spotify.com", "spotify.com"], color: "#1DB954" },
+  { id: "youtube", name: "YouTube Music", domains: ["music.youtube.com", "youtube.com", "youtu.be"], color: "#FF4D4D" },
+  { id: "soundcloud", name: "SoundCloud", domains: ["soundcloud.com"], color: "#FF7A33" },
+  { id: "apple", name: "Apple Music", domains: ["music.apple.com"], color: "#FB5C74" },
+  { id: "yandex", name: "Яндекс Музыка", domains: ["music.yandex.ru", "music.yandex.com"], color: "#FFCC4D" },
+  { id: "vk", name: "VK Музыка", domains: ["vk.com"], color: "#4C9EFF" },
+];
+
+function renderServiceChips() {
+  const list = document.getElementById("servicesList");
+  if (!list) return;
+
+  SERVICES.forEach((service) => {
+    const chip = document.createElement("span");
+    chip.className = "service-chip";
+    chip.style.setProperty("--chip-color", service.color);
+
+    const dot = document.createElement("span");
+    dot.className = "service-chip__dot";
+
+    const label = document.createElement("span");
+    label.textContent = service.name;
+
+    chip.appendChild(dot);
+    chip.appendChild(label);
+    list.appendChild(chip);
+  });
+}
+
+function extractHost(value) {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const withProtocol = /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+
+  try {
+    return new URL(withProtocol).hostname.toLowerCase().replace(/^www\./, "");
+  } catch (e) {
+    return null;
+  }
+}
+
+function detectService(value) {
+  const host = extractHost(value);
+  if (!host) return null;
+
+  return (
+    SERVICES.find((service) =>
+      service.domains.some((domain) => host === domain || host.endsWith(`.${domain}`))
+    ) || null
+  );
+}
+
+function hexToRgba(hex, alpha) {
+  const clean = hex.replace("#", "");
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const value = parseInt(full, 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function updateServiceBadge(service) {
+  const field = document.getElementById("downloaderField");
+  const badge = document.getElementById("serviceBadge");
+  const dot = document.getElementById("serviceBadgeDot");
+  const name = document.getElementById("serviceBadgeName");
+
+  if (service) {
+    field.style.setProperty("--detected-color", service.color);
+    field.style.setProperty("--detected-glow", hexToRgba(service.color, 0.16));
+    dot.style.background = service.color;
+    name.textContent = service.name;
+    name.dataset.serviceId = service.id;
+    badge.classList.add("is-visible");
+    field.classList.add("has-badge");
+  } else {
+    field.style.removeProperty("--detected-color");
+    field.style.removeProperty("--detected-glow");
+    name.dataset.serviceId = "";
+    badge.classList.remove("is-visible");
+    field.classList.remove("has-badge");
+  }
+}
+
+function initServiceDetection() {
+  const input = document.getElementById("linkInput");
+  const field = document.getElementById("downloaderField");
+
+  input.addEventListener("input", () => {
+    updateServiceBadge(detectService(input.value));
+    // typing again clears a previous invalid-link warning
+    field.classList.remove("is-invalid");
+  });
+}
+
+function triggerFieldShake(field) {
+  field.classList.remove("is-shaking");
+  void field.offsetWidth; // restart the animation
+  field.classList.add("is-shaking");
+}
+
+function setHint(key, isError) {
+  const hint = document.getElementById("formHint");
+  hint.dataset.hintKey = key;
+  hint.textContent = TRANSLATIONS[currentLang][key];
+  hint.classList.toggle("is-error", isError);
+}
+
+/* ==========================================================
+   Cover palette + search architecture
+   ----------------------------------------------------------
+   COVER_PALETTES only supplies fallback gradient colors for a
+   track's cover tile when no real artwork image is available.
+   All actual track data (title, artist, duration, preview audio)
+   comes from the real, public iTunes Search API — no invented
+   placeholder songs are used anywhere in the app.
+   ========================================================== */
+const COVER_PALETTES = [
+  ["#8B6BFF", "#2FE0C6"],
+  ["#FF9166", "#8B6BFF"],
+  ["#2FE0C6", "#FF9166"],
+  ["#B9A6FF", "#6DF0DC"],
+  ["#FF9166", "#2FE0C6"],
+  ["#8B6BFF", "#FF9166"],
+  ["#6DF0DC", "#B9A6FF"],
+  ["#2FE0C6", "#8B6BFF"],
+  ["#FF9166", "#6DF0DC"],
+  ["#B9A6FF", "#FF9166"],
+];
+
+/* ---------- Small fetch helper with a hard timeout ----------
+   Deliberately does NOT use AbortController/signal: some browser
+   environments (extensions, sandboxed previews) proxy fetch() in a
+   way that tries to structured-clone the request options to pass
+   them along — and an AbortSignal can't be structured-cloned, which
+   throws "DataCloneError: ... could not be cloned" and kills the
+   request before it even starts. Racing against a plain timeout
+   promise gives the same "don't wait forever" behavior without
+   touching AbortSignal at all. The only tradeoff: a timed-out
+   request keeps running in the background instead of being
+   cancelled — harmless here since its result is simply ignored. */
+function timeoutRejection(ms) {
+  return new Promise((_, reject) => {
+    window.setTimeout(() => reject(new Error("Timed out")), ms);
+  });
+}
+
+function fetchWithTimeout(url, options, timeoutMs) {
+  return Promise.race([fetch(url, options), timeoutRejection(timeoutMs || 10000)]);
+}
+
+/* ---------- Root cause of "search doesn't work" ----------
+   itunes.apple.com/search does NOT send an Access-Control-Allow-Origin
+   header to browser fetch() requests at all (this is a long-documented,
+   permanent limitation of that endpoint) — a direct fetch() fails with
+   a CORS error on every call. Public relays fix that, but they vary a
+   lot in latency and uptime from one moment to the next.
+
+   Speed fix: instead of trying relays one after another (slow — every
+   dead/slow relay adds its full timeout to the wait before the next
+   one even starts), fire requests through ALL relays at the same time
+   and use whichever comes back first. The rest are aborted immediately
+   so they don't waste bandwidth. This makes search as fast as the
+   single fastest relay at that moment, instead of as slow as summing
+   up every failed one first. Still the real Apple catalog — relays
+   only forward bytes, nothing is invented. Long-term this still wants
+   a first-party proxy (one Cloudflare Worker / Vercel function) this
+   site's origin controls, instead of depending on public relays. */
+const ITUNES_SEARCH_ENDPOINT = "https://itunes.apple.com/search";
+
+/* ---------- OPTIONAL first-party proxy ----------
+   Public CORS-relay services (below) are free but not something
+   anyone controls — they can go down, rate-limit, or silently block
+   an origin, which is the most likely cause of "sometimes it just
+   doesn't find anything." The permanent fix is a tiny backend you
+   control: deploy the included worker.js as a free Cloudflare Worker
+   (Workers & Pages → Create → paste worker.js → Deploy, no CLI
+   needed) and paste its *.workers.dev URL below. Every request then
+   goes straight to your own worker — one reliable call, no racing,
+   no dependency on third-party proxy uptime. Leave it empty and the
+   site keeps working exactly as it does now, via the public relays. */
+const PROXY_BASE = ""; // e.g. "https://musicsave-proxy.YOURNAME.workers.dev"
+
+const CORS_RELAYS = [
+  (url) => url, // direct — many endpoints (including itunes.apple.com/search, in practice) do answer this with CORS enabled, so it's worth trying first
+  (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  (url) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+  (url) => `https://thingproxy.freeboard.io/fetch/${url}`,
+];
+
+function fetchJsonWithCorsFallback(url, timeoutMs, relays, validate) {
+  const relayList = relays || CORS_RELAYS;
+  return new Promise((resolve, reject) => {
+    const limit = timeoutMs || 6000;
+    let pending = relayList.length;
+    let settled = false;
+
+    const finish = (isSuccess, value) => {
+      if (settled) return;
+      settled = true;
+      // Note: no AbortController here (see fetchWithTimeout above for
+      // why) — the losing/timed-out relay requests keep running in the
+      // background after we settle, but their results are simply
+      // ignored below (`if (settled) return`), so it's harmless.
+      if (isSuccess) resolve(value);
+      else reject(value);
+    };
+
+    relayList.forEach((buildUrl) => {
+      const attemptUrl = buildUrl(url);
+
+      Promise.race([fetch(attemptUrl), timeoutRejection(limit)])
+        .then((response) => {
+          if (settled) return;
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.text();
+        })
+        .then((raw) => {
+          if (settled || raw === undefined) return;
+          // A misbehaving relay can return 200 with an HTML/plain-text
+          // body (its own landing/error page) instead of the proxied
+          // JSON — treat that as a failed attempt, not a crash.
+          let data;
+          try {
+            data = JSON.parse(raw);
+          } catch (parseErr) {
+            throw new Error("Relay returned a non-JSON response");
+          }
+          // A relay can also answer 200 with its own JSON error object. Without
+          // this check the first such answer "won" the race and was shown to the
+          // user as "no results" instead of being treated as a failed relay.
+          if (validate && !validate(data)) {
+            throw new Error("Relay returned an unexpected payload");
+          }
+          finish(true, data);
+        })
+        .catch((err) => {
+          console.warn(`Request failed (${attemptUrl}):`, err);
+          pending -= 1;
+          if (pending === 0) finish(false, err);
+        });
+    });
+  });
+}
+
+function formatMsDuration(ms) {
+  if (!ms || Number.isNaN(ms)) return "--:--";
+  const totalSeconds = Math.round(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function mapItunesTrack(item, index) {
+  const palette = COVER_PALETTES[index % COVER_PALETTES.length];
+  return {
+    id: String(item.trackId || `${item.artistName}-${item.trackName}`),
+    track: item.trackName || "—",
+    artist: item.artistName || "—",
+    duration: formatMsDuration(item.trackTimeMillis),
+    quality: TRANSLATIONS[currentLang]["search.preview_label"],
+    cover: palette, // fallback gradient, used only if artwork fails to load
+    artworkUrl: item.artworkUrl100 ? item.artworkUrl100.replace("100x100", "300x300") : null,
+    previewUrl: item.previewUrl || null,
+    viewUrl: item.trackViewUrl || null,
+  };
+}
+
+const isItunesPayload = (data) => Boolean(data) && typeof data === "object" && Array.isArray(data.results);
+
+/* Only real songs: a lookup by id can also return an album, a music video, etc. */
+function mapItunesResults(data) {
+  return (data.results || [])
+    .filter((item) => item && item.wrapperType === "track" && item.kind === "song")
+    .map(mapItunesTrack);
+}
+
+async function itunesSearchOnce(term) {
+  let data;
+  if (PROXY_BASE) {
+    const endpoint = `${PROXY_BASE}/search?term=${encodeURIComponent(term)}`;
+    const response = await fetchWithTimeout(endpoint, undefined, 5000);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    data = await response.json();
+  } else {
+    const url = `${ITUNES_SEARCH_ENDPOINT}?term=${encodeURIComponent(term)}&media=music&entity=song&limit=12`;
+    data = await fetchJsonWithCorsFallback(url, 5000, undefined, isItunesPayload);
+  }
+  if (!isItunesPayload(data)) throw new Error("Unexpected search response");
+  return mapItunesResults(data);
+}
+
+async function itunesSearch(term) {
+  try {
+    return await itunesSearchOnce(term);
+  } catch (err) {
+    console.warn("iTunes search failed, retrying once:", err);
+    return await itunesSearchOnce(term);
+  }
+}
+
+/* Exact lookup by iTunes catalog id — used when a link carries the
+   track's real catalog id (Apple Music links do). The id is unique, so
+   this returns that one track, never a "close enough" guess. `country`
+   is the storefront taken from the link (/us/, /ua/ ...): without it
+   iTunes looks the id up in the US store only, and tracks that exist
+   only in another storefront came back as "not found". */
+async function itunesLookupById(trackId, country) {
+  const cc = /^[a-z]{2}$/i.test(country || "") ? country.toLowerCase() : "";
+  let data;
+  if (PROXY_BASE) {
+    const endpoint = `${PROXY_BASE}/lookup?id=${encodeURIComponent(trackId)}${cc ? `&country=${cc}` : ""}`;
+    const response = await fetchWithTimeout(endpoint, undefined, 5000);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    data = await response.json();
+  } else {
+    const url = `https://itunes.apple.com/lookup?id=${encodeURIComponent(trackId)}${cc ? `&country=${cc}` : ""}`;
+    data = await fetchJsonWithCorsFallback(url, 5000, undefined, isItunesPayload);
+  }
+  if (!isItunesPayload(data)) throw new Error("Unexpected lookup response");
+  return mapItunesResults(data);
+}
+
+const MusicSearchAPI = {
+  async searchByTitle(query) {
+    return itunesSearch(query);
+  },
+};
+
+/* ---------- Resolving a pasted service link ----------
+   A Spotify/YouTube/SoundCloud/etc. link can't be turned into a
+   downloadable file from the browser alone — that would require a
+   licensed backend integration with each service and would risk
+   violating their terms of service. What CAN be done honestly and
+   for free: a few services expose a public oEmbed endpoint (meant
+   for embedding link previews) that returns the track/video title
+   with no key and with CORS enabled. When that succeeds, the title
+   is used to find the real matching track — and its real preview —
+   in the iTunes catalog. When it doesn't succeed (unsupported
+   service, blocked request, or no catalog match) the app says so
+   plainly instead of inventing a result. */
+
+/* YouTube's oEmbed provider only recognizes youtube.com/watch and
+   youtu.be links — a music.youtube.com URL (what "YouTube Music"
+   actually gives you when you share a track) gets rejected by it
+   with an HTTP error, even though it's the exact same video ID.
+   Rewriting music.youtube.com → www.youtube.com before calling
+   oEmbed is the fix: same video, a host oEmbed actually accepts. */
+function extractYouTubeVideoId(rawUrl) {
+  try {
+    const u = new URL(rawUrl);
+    const host = u.hostname.toLowerCase().replace(/^www\./, "");
+    if (host === "youtu.be") {
+      return u.pathname.split("/").filter(Boolean)[0] || null;
+    }
+    if (host === "youtube.com" || host === "music.youtube.com" || host === "m.youtube.com") {
+      if (u.searchParams.get("v")) return u.searchParams.get("v");
+      const shortsMatch = u.pathname.match(/^\/(?:shorts|live|embed)\/([^/?]+)/);
+      if (shortsMatch) return shortsMatch[1];
+    }
+    return null;
+  } catch (err) {
+    return null;
+  }
+}
+
+function canonicalizeYouTubeUrl(rawUrl) {
+  const videoId = extractYouTubeVideoId(rawUrl);
+  return videoId ? `https://www.youtube.com/watch?v=${videoId}` : rawUrl;
+}
+
+const OEMBED_RESOLVERS = {
+  youtube: (url) => `https://www.youtube.com/oembed?url=${encodeURIComponent(canonicalizeYouTubeUrl(url))}&format=json`,
+  soundcloud: (url) => `https://soundcloud.com/oembed?url=${encodeURIComponent(url)}&format=json`,
+  spotify: (url) => `https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`,
+};
+
+/* Apple Music track links carry the real iTunes/Apple Music catalog id
+   as the "i" query parameter (e.g. .../album/song-name/1440841630?i=1440841632
+   — 1440841632 is the specific track, 1440841630 is just the album). That id
+   IS the unique identifier for this exact recording in the same catalog the
+   app already searches, so it's looked up directly instead of guessed from
+   text. A bare album/playlist link has no such per-track id — there is
+   nothing unique to key off, so it is intentionally left unresolved rather
+   than guessing which track on the album was intended. */
+function extractAppleMusicTrackId(rawUrl) {
+  try {
+    const u = new URL(rawUrl);
+    const i = u.searchParams.get("i");
+    return i && /^\d+$/.test(i) ? i : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+/* A link resolves "instantly" (no manual-only notice) either because we
+   have a real oEmbed metadata source for it, or — for Apple Music — because
+   we can key off its catalog id directly. */
+function canInstantPreview(serviceId) {
+  return serviceId === "apple" || Boolean(OEMBED_RESOLVERS[serviceId]);
+}
+
+/* ---------- Turning oEmbed's free-text title/author into the *right*
+   catalog track, not just the first search hit ----------
+   oEmbed only ever gives us text (a video/track title and an uploader
+   name), never a catalog id, so for Spotify/YouTube/SoundCloud links the
+   matching track still has to be found by search. Blindly taking the
+   first search result is what caused the wrong-song bug: iTunes' search
+   ranks by its own relevance, not by similarity to *this* title/artist
+   pair, so a same-named cover, remix, or another artist entirely could
+   rank first. Instead every candidate is scored against the title/author
+   we actually have, and the link is only resolved if the best candidate
+   clears a confidence threshold — otherwise the app says it couldn't
+   determine the track instead of guessing.
+
+   normalizeForMatch keeps letters/digits from ANY language (Cyrillic,
+   Japanese, etc. included) — an earlier version of this stripped
+   everything down to a-z0-9, which silently zeroed out the score for
+   any title or artist not written in Latin letters and made real
+   matches get rejected as "not found". */
+function normalizeForMatch(str) {
+  return (str || "")
+    .toString()
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "") // strip accents (café -> cafe), doesn't touch other scripts
+    .replace(/\(feat\.?[^)]*\)|\[feat\.?[^\]]*\]/gi, " ")
+    .replace(/\bfeat\.?\b.*$/i, " ")
+    .replace(/\bft\.?\b.*$/i, " ")
+    .replace(/[([][^)\]]*(official|lyric|audio|video|visualizer|remaster\w*|hd|4k|mv)[^)\]]*[)\]]/gi, " ")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ") // drop punctuation only — \p{L}/\p{N} match letters/digits in every script
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/* Same cleanup, but for building the actual search query text (keeps
+   original casing/spacing — normalizeForMatch's job is scoring, this
+   one's job is giving iTunes' own search a cleaner query so the right
+   track is more likely to even be among the results it returns). */
+function stripDescriptorNoise(text) {
+  const cleaned = (text || "")
+    .toString()
+    .replace(/\(feat\.?[^)]*\)|\[feat\.?[^\]]*\]/gi, " ")
+    .replace(/\bfeat\.?\b.*$/i, " ")
+    .replace(/\bft\.?\b.*$/i, " ")
+    .replace(/[([][^)\]]*(official|lyric|audio|video|visualizer|remaster\w*|hd|4k|mv)[^)\]]*[)\]]/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned || text; // never send an empty query if stripping ate everything
+}
+
+/* YouTube auto-generated music channels append " - Topic" to the real
+   artist name in author_name — strip it so artist matching isn't thrown
+   off by it. */
+function stripYouTubeTopicSuffix(author) {
+  return (author || "").toString().replace(/\s*-\s*topic\s*$/i, "").trim();
+}
+
+function tokensOf(str) {
+  return normalizeForMatch(str).split(" ").filter(Boolean);
+}
+
+function containsPhrase(haystack, needle) {
+  if (needle.length === 0 || needle.length > haystack.length) return false;
+  outer: for (let i = 0; i <= haystack.length - needle.length; i++) {
+    for (let j = 0; j < needle.length; j++) {
+      if (haystack[i + j] !== needle[j]) continue outer;
+    }
+    return true;
+  }
+  return false;
+}
+
+/* Scores how well `catalogText` (a candidate's actual track/artist name,
+   which tends to be short and clean) is represented inside `sourceText`
+   (an oEmbed title/author, which tends to be noisy — channel name,
+   "Official Video", extra punctuation). The denominator is deliberately
+   the CATALOG side's token count, not the longer of the two: a video
+   title with a lot of extra words around the real song name shouldn't
+   be penalized for those extra words, since that's normal and expected,
+   not a sign of a wrong match. An exact contiguous phrase match (the
+   catalog name appearing word-for-word inside the source text, or vice
+   versa) is treated as a full match regardless of length differences. */
+function matchScore(sourceText, catalogText) {
+  const sourceTokens = tokensOf(sourceText);
+  const catalogTokens = tokensOf(catalogText);
+  if (sourceTokens.length === 0 || catalogTokens.length === 0) return 0;
+
+  // Only "catalog name appears inside the source text" counts as a full match.
+  // The reverse direction was removed: a short source like "Home" must not
+  // fully match a different catalog track such as "Home Sweet Home".
+  if (containsPhrase(sourceTokens, catalogTokens)) {
+    return 1;
+  }
+
+  const sourceSet = new Set(sourceTokens);
+  let overlap = 0;
+  catalogTokens.forEach((t) => {
+    if (sourceSet.has(t)) overlap += 1;
+  });
+  return overlap / catalogTokens.length;
+}
+
+const MIN_TITLE_SCORE = 0.8;
+const MIN_ARTIST_SCORE = 0.5;
+
+/* Picks the catalog track for a link only when BOTH title and artist agree.
+   The old rule (title*0.65 + artist*0.35 >= 0.45) let a perfect title match
+   pass with a 0 artist score — so a cover or a different artist's song with
+   the same name was returned instead of the linked one.
+   Artist evidence = uploader name OR the artist appearing in the title
+   ("Artist - Song"). If the artist can't be confirmed, the link is resolved
+   only when no uploader name exists AND every title match is by one single
+   artist; otherwise it is ambiguous and the app says "not found" rather
+   than guessing. */
+function pickBestItunesMatch(candidates, title, author) {
+  if (!candidates || candidates.length === 0) return null;
+
+  const scored = candidates.map((candidate) => ({
+    candidate,
+    titleScore: matchScore(title, candidate.track),
+    artistScore: Math.max(author ? matchScore(author, candidate.artist) : 0, matchScore(title, candidate.artist)),
+  }));
+
+  const titleMatches = scored.filter((s) => s.titleScore >= MIN_TITLE_SCORE);
+  if (titleMatches.length === 0) return null;
+
+  const confirmed = titleMatches.filter((s) => s.artistScore >= MIN_ARTIST_SCORE);
+  if (confirmed.length > 0) {
+    // ties keep the earlier one, i.e. iTunes' own ranking
+    return confirmed.reduce((best, s) =>
+      s.titleScore + s.artistScore > best.titleScore + best.artistScore ? s : best
+    ).candidate;
+  }
+
+  if (!author) {
+    const artists = new Set(titleMatches.map((s) => normalizeForMatch(s.candidate.artist)));
+    if (artists.size === 1) return titleMatches[0].candidate;
+  }
+  return null;
+}
+
+/* A pasted link may lack the scheme ("open.spotify.com/track/..."). The
+   service detector accepts that, but new URL() in the helpers below does
+   not — so such links silently failed to resolve. */
+function normalizeLinkUrl(raw) {
+  const trimmed = (raw || "").trim();
+  return /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+function urlPathOf(rawUrl) {
+  try {
+    return new URL(rawUrl).pathname;
+  } catch (err) {
+    return "";
+  }
+}
+
+function extractAppleStorefront(rawUrl) {
+  try {
+    const m = new URL(rawUrl).pathname.match(/^\/([a-z]{2})\//i);
+    return m ? m[1].toLowerCase() : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+/* Resolves to a track, to null ("definitely not found / not a single
+   track link"), or THROWS on network/API failure — so a transient failure is
+   no longer reported as "track not found" and no longer cached forever. */
+async function resolveTrackFromLink(rawUrl, service) {
+  const url = normalizeLinkUrl(rawUrl);
+
+  if (service.id === "apple") {
+    const trackId = extractAppleMusicTrackId(url);
+    if (!trackId) return null; // album/playlist link with no specific track — nothing unique to key off
+    const matches = await itunesLookupById(trackId, extractAppleStorefront(url));
+    return matches[0] || null;
+  }
+
+  if (!OEMBED_RESOLVERS[service.id]) return null; // no metadata source registered for this service at all
+
+  // Albums/playlists have an oEmbed title too — searching that title as a
+  // "song" is exactly how a wrong track could be returned.
+  const path = urlPathOf(url);
+  if (service.id === "spotify" && !/\/track\/[A-Za-z0-9]+/.test(path)) return null;
+  if (service.id === "soundcloud" && /\/sets\//.test(path)) return null;
+  if (service.id === "youtube" && !extractYouTubeVideoId(url)) return null;
+
+  let meta;
+  if (PROXY_BASE) {
+    const endpoint = `${PROXY_BASE}/oembed?service=${encodeURIComponent(service.id)}&url=${encodeURIComponent(url)}`;
+    const response = await fetchWithTimeout(endpoint, undefined, 4500);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    meta = await response.json();
+  } else {
+    meta = await fetchJsonWithCorsFallback(
+      OEMBED_RESOLVERS[service.id](url),
+      4500,
+      undefined,
+      (d) => Boolean(d) && typeof d === "object" && typeof d.title === "string"
+    );
+  }
+
+  const title = ((meta && meta.title) || "").toString();
+  let author = ((meta && meta.author_name) || "").toString();
+  if (service.id === "youtube") author = stripYouTubeTopicSuffix(author);
+
+  const searchTerm = [stripDescriptorNoise(title), stripDescriptorNoise(author)].filter(Boolean).join(" ").trim();
+  if (!searchTerm) return null;
+
+  const matches = await itunesSearch(searchTerm);
+  return pickBestItunesMatch(matches, title, author);
+}
+
+/* ---------- Dedupe / cache layer for link → track lookups ----------
+   Keyed by the exact trimmed link text. The cache stores the PROMISE
+   itself (not just the eventual result), so:
+   - a link that's already resolved returns instantly, no new request;
+   - a link that's still being resolved (e.g. the user re-triggers the
+     same lookup, or the auto-preview and the submit button ask for the
+     same link) is joined onto the single in-flight request instead of
+     firing a second one;
+   - a failed lookup resolves to `null` and stays cached, so retyping
+     the same broken link doesn't hit the network again either. */
+const linkTrackCache = new Map();
+const LINK_LOOKUP_FAILED = Object.freeze({ failed: true });
+
+function getTrackForLinkCached(url, service) {
+  const key = url.trim();
+  if (linkTrackCache.has(key)) return linkTrackCache.get(key);
+
+  const promise = resolveTrackFromLink(key, service).catch((err) => {
+    console.warn("Link resolve failed:", err);
+    linkTrackCache.delete(key); // a network/API failure is not cached: retrying the same link must retry the request
+    return LINK_LOOKUP_FAILED;
+  });
+  linkTrackCache.set(key, promise);
+  return promise;
+}
+
+/* ---------- Instant preview: shows track info under the input as
+   soon as a link is pasted, with no click required.
+   - debounced, so a fast paste (which fires several "input" events
+     in some browsers/extensions) only triggers one lookup
+   - a cache hit (same link resolved before) skips the debounce and
+     the network entirely — the result renders immediately
+   - a stale response (user kept typing after the request was fired)
+     is dropped via the request token, so the UI never flashes an
+     outdated result
+   - the loading spinner is shown only while a request is actually
+     in flight — never during the debounce wait */
+function initLinkAutoPreview() {
+  const input = document.getElementById("linkInput");
+  const preview = document.getElementById("linkPreview");
+  const loadingEl = document.getElementById("linkPreviewLoading");
+  const trackEl = document.getElementById("linkPreviewTrack");
+  const errorEl = document.getElementById("linkPreviewError");
+  const coverImg = document.getElementById("linkPreviewCoverImg");
+  const coverFallback = document.getElementById("linkPreviewCoverFallback");
+  const titleEl = document.getElementById("linkPreviewTitle");
+  const artistEl = document.getElementById("linkPreviewArtist");
+  const durationEl = document.getElementById("linkPreviewDuration");
+
+  const DEBOUNCE_MS = 350;
+  let debounceTimer = null;
+  let requestToken = 0;
+
+  function hidePreview() {
+    preview.hidden = true;
+    loadingEl.hidden = true;
+    trackEl.hidden = true;
+    errorEl.hidden = true;
+  }
+
+  function showLoading() {
+    preview.hidden = false;
+    loadingEl.hidden = false;
+    trackEl.hidden = true;
+    errorEl.hidden = true;
+  }
+
+  function showError(key) {
+    preview.hidden = false;
+    loadingEl.hidden = true;
+    trackEl.hidden = true;
+    errorEl.hidden = false;
+    errorEl.textContent = TRANSLATIONS[currentLang][key];
+  }
+
+  function showTrack(track) {
+    preview.hidden = false;
+    loadingEl.hidden = true;
+    errorEl.hidden = true;
+    trackEl.hidden = false;
+    titleEl.textContent = track.track;
+    artistEl.textContent = track.artist;
+    durationEl.textContent = track.duration;
+    if (safeImageUrl(track.artworkUrl)) {
+      coverImg.src = safeImageUrl(track.artworkUrl);
+      coverImg.hidden = false;
+      coverFallback.hidden = true;
+    } else {
+      coverImg.removeAttribute("src");
+      coverImg.hidden = true;
+      coverFallback.hidden = false;
+    }
+  }
+
+  function runLookup(value, service) {
+    const token = ++requestToken;
+    showLoading();
+    getTrackForLinkCached(value, service).then((track) => {
+      if (token !== requestToken) return; // a newer link came in — drop this stale result
+      if (track === LINK_LOOKUP_FAILED) showError("preview.lookup_failed");
+      else if (track) showTrack(track);
+      else showError("preview.not_found");
+    });
+  }
+
+  input.addEventListener("input", () => {
+    const value = input.value.trim();
+    window.clearTimeout(debounceTimer);
+    requestToken++; // invalidate any pending lookup right away
+
+    if (!value) {
+      hidePreview();
+      return;
+    }
+
+    const service = detectService(value);
+    if (!service) {
+      hidePreview();
+      return;
+    }
+
+    if (!canInstantPreview(service.id)) {
+      // No free public metadata endpoint (and no catalog id to key off)
+      // for this service — say so immediately instead of spending a
+      // request that can't work.
+      showError("preview.manual_only");
+      return;
+    }
+
+    if (linkTrackCache.has(value)) {
+      // Already resolved (or currently in flight) — reuse it, no
+      // debounce wait and no new network request.
+      runLookup(value, service);
+      return;
+    }
+
+    debounceTimer = window.setTimeout(() => runLookup(value, service), DEBOUNCE_MS);
+  });
+}
+
+function initDownloadForm() {
+  const form = document.getElementById("downloadForm");
+  const input = document.getElementById("linkInput");
+  const field = document.getElementById("downloaderField");
+  const submitBtn = document.getElementById("submitBtn");
+  const resultCard = document.getElementById("resultCard");
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const value = input.value.trim();
+
+    if (!value) {
+      input.focus();
+      setHint("form.hint_error", true);
+      triggerFieldShake(field);
+      return;
+    }
+
+    const service = detectService(value);
+    if (!service) {
+      input.focus();
+      field.classList.add("is-invalid");
+      setHint("form.hint_invalid", true);
+      triggerFieldShake(field);
+      return;
+    }
+
+    field.classList.remove("is-invalid");
+    setHint("form.hint_resolving", false);
+
+    // hide any previous result while a new one loads
+    resultCard.hidden = true;
+
+    submitBtn.classList.add("is-loading");
+    submitBtn.disabled = true;
+
+    getTrackForLinkCached(value, service).then((track) => {
+      submitBtn.classList.remove("is-loading");
+      submitBtn.disabled = false;
+
+      if (track === LINK_LOOKUP_FAILED) {
+        resultCard.hidden = true;
+        setHint("form.hint_lookup_failed", true);
+      } else if (track) {
+        setHint("form.hint", false);
+        fillResultCard(track);
+        resultCard.hidden = false;
+        resultCard.querySelector(".result__card").classList.remove("is-visible");
+        requestAnimationFrame(() => {
+          resultCard.scrollIntoView({ behavior: "smooth", block: "center" });
+        });
+      } else {
+        resultCard.hidden = true;
+        setHint("form.hint_unresolved", true);
+      }
+    });
+  });
+}
+
+/* the track currently shown in the hero result card — used by that
+   card's own Listen/Download buttons */
+let currentResultTrack = null;
+
+function fillResultCard(track) {
+  currentResultTrack = track;
+
+  document.getElementById("resultTrack").textContent = track.track;
+  document.getElementById("resultArtist").textContent = track.artist;
+  document.getElementById("resultDuration").textContent = track.duration;
+  document.getElementById("resultQuality").textContent = track.quality;
+  setHeroPlaylistButtonState(isInPlaylist(track.id));
+
+  const coverStart = document.getElementById("coverGradStart");
+  const coverEnd = document.getElementById("coverGradEnd");
+  if (coverStart && coverEnd && track.cover) {
+    coverStart.style.stopColor = track.cover[0];
+    coverEnd.style.stopColor = track.cover[1];
+  }
+}
+
+/* ---------- FAQ accordion ---------- */
+function initFaqAccordion() {
+  const items = document.querySelectorAll(".faq-item");
+
+  items.forEach((item) => {
+    const question = item.querySelector(".faq-item__q");
+    const answer = item.querySelector(".faq-item__a");
+
+    question.addEventListener("click", () => {
+      const isOpen = item.classList.contains("is-open");
+
+      items.forEach((other) => {
+        other.classList.remove("is-open");
+        other.querySelector(".faq-item__a").style.maxHeight = null;
+      });
+
+      if (!isOpen) {
+        item.classList.add("is-open");
+        answer.style.maxHeight = `${answer.scrollHeight}px`;
+      }
+    });
+  });
+}
+
+/* ---------- Real "Download" action — saves the available preview file ---------- */
+async function downloadPreviewFile(track) {
+  if (!track || !track.previewUrl) {
+    showToast(TRANSLATIONS[currentLang]["toast.preview_error"]);
+    return;
+  }
+
+  showToast(TRANSLATIONS[currentLang]["toast.download"]);
+
+  const safeName =
+    `${track.artist} - ${track.track}`.replace(/[\\/:*?"<>|]+/g, "").trim() || "preview";
+
+  try {
+    const response = await fetchWithTimeout(track.previewUrl, undefined, 15000);
+    if (!response.ok) throw new Error(`Preview download responded with ${response.status}`);
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = `${safeName}.m4a`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
+  } catch (err) {
+    // The preview CDN may not send CORS headers that allow a blob
+    // fetch from this origin — fall back to opening the file directly
+    // so the browser can still save it (e.g. "Save Audio As…").
+    console.warn("Direct preview download failed, opening file instead:", err);
+    window.open(track.previewUrl, "_blank", "noopener");
+    showToast(TRANSLATIONS[currentLang]["toast.download_opened"]);
+  }
+}
+
+function initDownloadMp3Button() {
+  const btn = document.getElementById("downloadMp3Btn");
+  btn.addEventListener("click", () => {
+    downloadPreviewFile(currentResultTrack);
+  });
+}
+
+/* ---------- "Listen" action for the link-search result card ---------- */
+function initListenButton() {
+  const btn = document.getElementById("listenBtn");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    AudioPreview.toggle(currentResultTrack, btn, {
+      labelEl: btn.querySelector("span[data-i18n]"),
+      playKey: "result.listen",
+      pauseKey: "track.pause",
+    });
+  });
+}
+
+/* ==========================================================
+   Shared audio preview player
+   Only one preview plays at a time; clicking a playing
+   button's Listen control again pauses it.
+   ========================================================== */
+const AudioPreview = (function () {
+  const audioEl = new Audio();
+  audioEl.preload = "none";
+  let activeButton = null;
+  let activeOptions = null;
+  let playSeq = 0;
+
+  function setButtonState(button, isPlaying, options) {
+    if (!button) return;
+    button.classList.toggle("is-playing", isPlaying);
+    if (options && options.labelEl) {
+      const key = isPlaying ? options.pauseKey : options.playKey;
+      options.labelEl.textContent = TRANSLATIONS[currentLang][key];
+    }
+  }
+
+  function stopActive() {
+    if (activeButton) setButtonState(activeButton, false, activeOptions);
+    audioEl.pause();
+    activeButton = null;
+    activeOptions = null;
+  }
+
+  audioEl.addEventListener("ended", stopActive);
+
+  return {
+    stop() {
+      stopActive();
+    },
+    toggle(track, button, options) {
+      const isSameTrack = activeButton === button && !audioEl.paused;
+
+      if (isSameTrack) {
+        stopActive();
+        return;
+      }
+
+      stopActive();
+
+      if (!track || !track.previewUrl) {
+        showToast(TRANSLATIONS[currentLang]["toast.preview_error"]);
+        return;
+      }
+
+      // Always start a preview at 0:00. audioEl is a single shared <audio>
+      // element reused for every track, so if the same track is played
+      // again (or another track happens to share the same preview URL)
+      // after the first one already progressed or finished, reassigning
+      // an *identical* src string is a no-op in some browsers — it does
+      // NOT reset playback position — so play() would resume from
+      // wherever the previous playthrough left off (near the end of the
+      // ~30s preview, which is the "starts around 0:30" symptom). Setting
+      // currentTime to 0 and forcing a fresh load() guarantees every
+      // preview starts from the beginning regardless of what played
+      // before it. No "start"/"t"/seek parameters are ever added to the
+      // preview URL itself, and none should be.
+      audioEl.pause();
+      try {
+        audioEl.currentTime = 0;
+      } catch (err) {
+        /* ignore — readyState may not allow a seek yet; load() below
+           resets position regardless */
+      }
+      audioEl.src = track.previewUrl;
+      audioEl.load();
+
+      // Defensive second reset: once the browser actually has metadata
+      // for the new source, force position 0 again in case a given
+      // browser restores a remembered position for a previously-loaded
+      // URL instead of starting fresh.
+      const resetToStart = () => {
+        audioEl.currentTime = 0;
+      };
+      audioEl.onloadedmetadata = resetToStart; // property, not addEventListener: never stacks up
+
+      const playId = ++playSeq;
+      const playPromise = audioEl.play();
+
+      activeButton = button;
+      activeOptions = options;
+      setButtonState(button, true, options);
+
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch((err) => {
+          // Switching tracks or pausing calls pause()/load(), which rejects the
+          // previous play() with AbortError. That used to stop the NEW track and
+          // show a false "preview unavailable" toast.
+          if (playId !== playSeq) return;
+          if (err && err.name === "AbortError") return;
+          stopActive();
+          showToast(TRANSLATIONS[currentLang]["toast.preview_error"]);
+        });
+      }
+    },
+  };
+})();
+
+/* ==========================================================
+   Accounts (login + password)
+   Everything is stored in this browser's localStorage — there is
+   no server. Passwords are never saved in plain text (salted
+   PBKDF2 hash), but this is NOT a substitute for real server-side
+   authentication: anyone with access to the browser profile can
+   read/modify the stored data.
+   ========================================================== */
+const USERS_KEY = "musicsave_users";
+const SESSION_KEY = "musicsave_session";
+const LEGACY_PLAYLIST_KEY = "musicsave_playlist";
+const PLAYLIST_KEY_PREFIX = "musicsave_playlist_u_";
+
+/* localStorage wrapper with an in-memory fallback (private mode, sandboxed preview) */
+const memoryStore = {};
+const store = {
+  get(key) {
+    try { if (window.localStorage) return window.localStorage.getItem(key); } catch (e) { /* fall through */ }
+    return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+  },
+  set(key, value) {
+    memoryStore[key] = value;
+    try { if (window.localStorage) window.localStorage.setItem(key, value); } catch (e) { /* kept in memory */ }
+  },
+  remove(key) {
+    delete memoryStore[key];
+    try { if (window.localStorage) window.localStorage.removeItem(key); } catch (e) { /* ignore */ }
+  },
+};
+
+/* ---------- Server (database) mode ----------
+   When the site is opened through server.js (http://localhost:3000), accounts and
+   playlists live in the SQLite database. If no server answers, the site silently
+   falls back to browser-only storage so it still works as a plain file. */
+const API_BASE = /^https?:$/.test(window.location.protocol) ? "" : "http://localhost:3000";
+const TOKEN_KEY = "musicsave_token";
+let serverMode = false;
+/* Resolves when the server/no-server detection (initBackend) has finished. Login and
+   registration wait for it: before this, an account created while detection was still
+   running was wiped when the server answered, the profile view fell back to the login
+   modal, and its full-screen backdrop then blocked every button on the page. */
+let backendReady = Promise.resolve();
+let authToken = store.get(TOKEN_KEY);
+
+async function api(method, url, body, timeoutMs) {
+  const ctrl = new AbortController();
+  const timer = window.setTimeout(() => ctrl.abort(), timeoutMs || 8000);
+  try {
+    const headers = { "Content-Type": "application/json" };
+    if (authToken) headers.Authorization = "Bearer " + authToken;
+    const res = await fetch(API_BASE + url, {
+      method, headers, signal: ctrl.signal,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    let data = {};
+    try { data = await res.json(); } catch (e) { /* empty body */ }
+    return { ok: res.ok, status: res.status, data };
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
+async function initBackend() {
+  try {
+    const health = await api("GET", "/api/health", undefined, 1500);
+    serverMode = !!(health.ok && health.data && health.data.ok);
+  } catch (e) {
+    serverMode = false;
+  }
+  if (!serverMode) return;
+
+  currentUser = null;
+  playlist = [];
+  const note = document.getElementById("authNote");
+  note.setAttribute("data-i18n", "auth.note_server");
+  note.textContent = t("auth.note_server");
+
+  if (authToken) {
+    try {
+      const me = await api("GET", "/api/me");
+      if (me.ok) {
+        currentUser = { key: me.data.username.toLowerCase(), username: me.data.username };
+        const pl = await api("GET", "/api/playlist");
+        playlist = pl.ok && Array.isArray(pl.data.tracks) ? pl.data.tracks : [];
+      } else if (me.status === 401) {
+        authToken = null;
+        store.remove(TOKEN_KEY);
+      }
+    } catch (e) { /* server hiccup — stay logged out for now */ }
+  }
+}
+
+function serverErrorKey(res) {
+  const map = { format: "auth.err_format", pw_short: "auth.err_pw_short", taken: "auth.err_taken",
+                wrong: "auth.err_wrong", too_many: "auth.err_many" };
+  return map[res.data && res.data.error] || "auth.err_generic";
+}
+
+function readJSON(key, fallback) {
+  try {
+    const raw = store.get(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
+
+function loadUsers() {
+  const users = readJSON(USERS_KEY, {});
+  return users && typeof users === "object" && !Array.isArray(users) ? users : {};
+}
+
+function bytesToHex(bytes) {
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function hexToBytes(hex) {
+  const out = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.substr(i * 2, 2), 16);
+  return out;
+}
+
+function randomSalt() {
+  const bytes = new Uint8Array(16);
+  if (window.crypto && window.crypto.getRandomValues) {
+    window.crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  return bytesToHex(bytes);
+}
+
+async function hashPassword(password, saltHex) {
+  try {
+    if (window.crypto && window.crypto.subtle) {
+      const keyMaterial = await window.crypto.subtle.importKey(
+        "raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]
+      );
+      const bits = await window.crypto.subtle.deriveBits(
+        { name: "PBKDF2", salt: hexToBytes(saltHex), iterations: 100000, hash: "SHA-256" },
+        keyMaterial, 256
+      );
+      return "p1:" + bytesToHex(new Uint8Array(bits));
+    }
+  } catch (e) { /* use the fallback below */ }
+  let h = 5381;
+  const input = saltHex + password;
+  for (let i = 0; i < input.length; i++) h = ((h << 5) + h + input.charCodeAt(i)) | 0;
+  return "f1:" + (h >>> 0).toString(16);
+}
+
+function loadSessionUser() {
+  const key = store.get(SESSION_KEY);
+  if (!key) return null;
+  const users = loadUsers();
+  return users[key] ? { key, username: users[key].username } : null;
+}
+
+let currentUser = loadSessionUser();
+let pendingTrack = null; // track the guest tried to add before logging in
+
+/* ==========================================================
+   Profile — personal playlist
+   Stored locally in the browser, one playlist per account: a
+   plain array of track objects, keyed by track.id.
+   ========================================================== */
+function playlistStorageKey() {
+  return currentUser ? PLAYLIST_KEY_PREFIX + currentUser.key : null;
+}
+
+function loadPlaylist() {
+  const key = playlistStorageKey();
+  if (!key) return [];
+  const parsed = readJSON(key, []);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function savePlaylist() {
+  if (serverMode) {
+    if (authToken) {
+      // api() resolves (does not throw) on HTTP 4xx/5xx, so the old .catch() alone
+      // swallowed every rejected save and the playlist silently vanished on reload.
+      api("PUT", "/api/playlist", { tracks: playlist })
+        .then((res) => {
+          if (!res.ok) {
+            console.warn("Playlist save rejected:", res.status);
+            showToast(t("toast.save_failed"));
+          }
+        })
+        .catch(() => showToast(t("toast.save_failed")));
+    }
+    return;
+  }
+  const key = playlistStorageKey();
+  if (!key) return;
+  store.set(key, JSON.stringify(playlist));
+}
+
+let playlist = loadPlaylist();
+
+function isInPlaylist(trackId) {
+  return playlist.some((t) => t.id === trackId);
+}
+
+function addToPlaylist(track) {
+  if (!track || !track.id || isInPlaylist(track.id)) return;
+  if (!currentUser) {
+    // guests must log in first; the track is added right after a successful login
+    pendingTrack = track;
+    openAuthModal("login");
+    showToast(TRANSLATIONS[currentLang]["toast.login_required"]);
+    return;
+  }
+  playlist.push(track);
+  savePlaylist();
+  renderPlaylist();
+  refreshPlaylistButtonsForTrack(track.id);
+  showToast(TRANSLATIONS[currentLang]["toast.playlist_added"]);
+}
+
+function removeFromPlaylist(trackId) {
+  playlist = playlist.filter((t) => t.id !== trackId);
+  savePlaylist();
+  renderPlaylist();
+  refreshPlaylistButtonsForTrack(trackId);
+  showToast(TRANSLATIONS[currentLang]["toast.playlist_removed"]);
+}
+
+/* keeps every already-rendered card/button for this track (in the
+   search results grid and the hero result card) in sync after an
+   add/remove, without re-rendering those sections */
+function refreshPlaylistButtonsForTrack(trackId) {
+  const inPlaylist = isInPlaylist(trackId);
+
+  document.querySelectorAll(".track-card__playlist-btn").forEach((btn) => {
+    if (btn.dataset.trackId !== trackId) return;
+    const label = btn.querySelector('[data-role="playlist-label"]');
+    setTrackCardPlaylistState(btn, label, inPlaylist);
+  });
+
+  if (currentResultTrack && currentResultTrack.id === trackId) {
+    setHeroPlaylistButtonState(inPlaylist);
+  }
+}
+
+function renderPlaylist() {
+  const grid = document.getElementById("playlistGrid");
+  const emptyEl = document.getElementById("playlistEmpty");
+  if (!grid) return;
+
+  grid.innerHTML = "";
+  updateProfileCount();
+
+  if (!playlist.length) {
+    if (emptyEl) emptyEl.hidden = false;
+    return;
+  }
+
+  if (emptyEl) emptyEl.hidden = true;
+
+  playlist.forEach((track, index) => {
+    grid.appendChild(createTrackCard(track, index));
+  });
+}
+
+/* ---------- Add/remove-playlist button on the hero result card ---------- */
+function setHeroPlaylistButtonState(isAdded) {
+  const btn = document.getElementById("playlistBtn");
+  const label = document.getElementById("playlistBtnLabel");
+  if (!btn || !label) return;
+  btn.classList.toggle("is-added", isAdded);
+  label.textContent = TRANSLATIONS[currentLang][isAdded ? "result.in_playlist" : "result.add_to_playlist"];
+}
+
+function initPlaylistButton() {
+  const btn = document.getElementById("playlistBtn");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    if (!currentResultTrack) return;
+    if (isInPlaylist(currentResultTrack.id)) {
+      removeFromPlaylist(currentResultTrack.id);
+    } else {
+      addToPlaylist(currentResultTrack);
+    }
+  });
+}
+
+/* ==========================================================
+   Search by title / author
+   ========================================================== */
+function clearSearchResults() {
+  document.getElementById("searchResults").innerHTML = "";
+  document.getElementById("searchEmpty").hidden = true;
+  document.getElementById("searchStatus").hidden = true;
+  const previewNoteEl = document.getElementById("searchPreviewNote");
+  if (previewNoteEl) previewNoteEl.hidden = true;
+}
+
+function initSearchForm() {
+  const form = document.getElementById("searchForm");
+  const input = document.getElementById("searchInput");
+  const field = document.getElementById("searchField");
+  const submitBtn = document.getElementById("searchSubmitBtn");
+  const statusEl = document.getElementById("searchStatus");
+  const emptyEl = document.getElementById("searchEmpty");
+  const resultsEl = document.getElementById("searchResults");
+  if (!form) return;
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const query = input.value.trim();
+
+    if (!query) {
+      input.focus();
+      field.classList.add("is-invalid");
+      triggerFieldShake(field);
+      showToast(TRANSLATIONS[currentLang]["search.hint_error"]);
+      return;
+    }
+
+    field.classList.remove("is-invalid");
+
+    resultsEl.innerHTML = "";
+    emptyEl.hidden = true;
+    statusEl.hidden = false;
+    submitBtn.classList.add("is-loading");
+    submitBtn.disabled = true;
+
+    MusicSearchAPI.searchByTitle(query)
+      .then((results) => {
+        statusEl.hidden = true;
+        submitBtn.classList.remove("is-loading");
+        submitBtn.disabled = false;
+        emptyEl.dataset.emptyKey = "search.empty";
+        renderSearchResults(results);
+      })
+      .catch(() => {
+        statusEl.hidden = true;
+        submitBtn.classList.remove("is-loading");
+        submitBtn.disabled = false;
+        resultsEl.innerHTML = "";
+        emptyEl.dataset.emptyKey = "search.error";
+        emptyEl.textContent = TRANSLATIONS[currentLang]["search.error"];
+        emptyEl.hidden = false;
+      });
+  });
+}
+
+function safeImageUrl(value) {
+  try {
+    const u = new URL(value);
+    return u.protocol === "https:" ? u.href : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+function buildTrackCoverSvg() {
+  return `<svg viewBox="0 0 64 64" width="26" height="26" fill="none" aria-hidden="true">
+    <path d="M24 20v18.2a5.4 5.4 0 1 0 2.6 4.6V26l14-3.2v13a5.4 5.4 0 1 0 2.6 4.6V15L24 20z" fill="#0A0C10" fill-opacity="0.92"/>
+  </svg>`;
+}
+
+/* ---------- Shared track-card builder (search results + playlist) ---------- */
+function createTrackCard(track, index) {
+  const dict = TRANSLATIONS[currentLang];
+  const card = document.createElement("article");
+  card.className = "track-card";
+  card.style.setProperty("--card-delay", `${Math.min(index * 70, 420)}ms`);
+  const cover = Array.isArray(track.cover) && track.cover.length >= 2 ? track.cover : COVER_PALETTES[0];
+  card.style.setProperty("--cover-a", cover[0]);
+  card.style.setProperty("--cover-b", cover[1]);
+
+  card.innerHTML = `
+    <div class="track-card__top">
+      <div class="track-card__cover"></div>
+      <div class="track-card__info">
+        <p class="track-card__title"></p>
+        <p class="track-card__artist"></p>
+        <p class="track-card__duration"></p>
+      </div>
+    </div>
+    <div class="track-card__actions">
+      <button type="button" class="track-card__btn track-card__btn--listen">
+        <svg class="icon-play" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M4.5 3.2v9.6a.8.8 0 0 0 1.22.68l7.6-4.8a.8.8 0 0 0 0-1.36l-7.6-4.8A.8.8 0 0 0 4.5 3.2Z" fill="currentColor"/>
+        </svg>
+        <svg class="icon-pause" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M4.5 3h2.2v10H4.5V3Zm4.8 0h2.2v10H9.3V3Z" fill="currentColor"/>
+        </svg>
+        <span data-role="listen-label"></span>
+      </button>
+      <button type="button" class="track-card__btn track-card__btn--download">
+        <svg width="14" height="14" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M9 2v9.5m0 0 3.5-3.6M9 11.5 5.5 7.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 13.5v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span data-role="download-label"></span>
+      </button>
+    </div>
+    <button type="button" class="track-card__playlist-btn">
+      <svg class="icon-add" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M8 3.2v9.6M3.2 8h9.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <svg class="icon-remove" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M4 4.6h8M6.6 4.6V3.4a1 1 0 0 1 1-1h.8a1 1 0 0 1 1 1v1.2M5.2 4.6l.5 8a1 1 0 0 0 1 .9h2.6a1 1 0 0 0 1-.9l.5-8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span data-role="playlist-label"></span>
+    </button>
+  `;
+
+  // Built through the DOM (not innerHTML): artwork URLs come back through
+  // third-party CORS relays and from stored playlists, so they must never be
+  // pasted into markup.
+  const coverEl = card.querySelector(".track-card__cover");
+  const artUrl = safeImageUrl(track.artworkUrl);
+  if (artUrl) {
+    const img = document.createElement("img");
+    img.alt = "";
+    img.loading = "lazy";
+    img.addEventListener("error", () => img.remove());
+    img.src = artUrl;
+    coverEl.appendChild(img);
+  } else {
+    coverEl.innerHTML = buildTrackCoverSvg();
+  }
+
+  card.querySelector(".track-card__title").textContent = track.track;
+  card.querySelector(".track-card__artist").textContent = track.artist;
+  card.querySelector(".track-card__duration").textContent = `${track.duration} · ${track.quality}`;
+
+  const listenLabel = card.querySelector('[data-role="listen-label"]');
+  const downloadLabel = card.querySelector('[data-role="download-label"]');
+  listenLabel.textContent = dict["track.listen"];
+  downloadLabel.textContent = dict["track.download"];
+
+  const listenBtn = card.querySelector(".track-card__btn--listen");
+  const downloadBtn = card.querySelector(".track-card__btn--download");
+
+  listenBtn.addEventListener("click", () => {
+    AudioPreview.toggle(track, listenBtn, {
+      labelEl: listenLabel,
+      playKey: "track.listen",
+      pauseKey: "track.pause",
+    });
+  });
+
+  downloadBtn.addEventListener("click", () => {
+    downloadPreviewFile(track);
+  });
+
+  const playlistBtn = card.querySelector(".track-card__playlist-btn");
+  const playlistLabel = card.querySelector('[data-role="playlist-label"]');
+  playlistBtn.dataset.trackId = track.id;
+  setTrackCardPlaylistState(playlistBtn, playlistLabel, isInPlaylist(track.id));
+
+  playlistBtn.addEventListener("click", () => {
+    if (isInPlaylist(track.id)) {
+      removeFromPlaylist(track.id);
+    } else {
+      addToPlaylist(track);
+    }
+  });
+
+  return card;
+}
+
+function setTrackCardPlaylistState(btn, label, isAdded) {
+  btn.classList.toggle("is-added", isAdded);
+  label.textContent = TRANSLATIONS[currentLang][isAdded ? "track.in_playlist" : "track.add_to_playlist"];
+}
+
+function renderSearchResults(results) {
+  const resultsEl = document.getElementById("searchResults");
+  const emptyEl = document.getElementById("searchEmpty");
+  const previewNoteEl = document.getElementById("searchPreviewNote");
+
+  resultsEl.innerHTML = "";
+
+  if (!results || results.length === 0) {
+    emptyEl.dataset.emptyKey = "search.empty";
+    emptyEl.textContent = TRANSLATIONS[currentLang]["search.empty"];
+    emptyEl.hidden = false;
+    if (previewNoteEl) previewNoteEl.hidden = true;
+    return;
+  }
+
+  emptyEl.hidden = true;
+  if (previewNoteEl) previewNoteEl.hidden = false;
+
+  results.forEach((track, index) => {
+    resultsEl.appendChild(createTrackCard(track, index));
+  });
+}
+
+/* ==========================================================
+   Account UI — navbar button, auth modal, profile page, routing
+   ========================================================== */
+const LOGIN_RE = /^[A-Za-z0-9_.\-\u0400-\u04FF]{3,20}$/;
+let authMode = "login";
+let currentView = "home";
+
+function t(key) {
+  return TRANSLATIONS[currentLang][key] || key;
+}
+
+function updateProfileCount() {
+  const n = playlist.length;
+  const badge = document.getElementById("playlistCount");
+  const sub = document.getElementById("profileSub");
+  if (badge) badge.textContent = String(n);
+  if (sub) sub.textContent = `${t("profile.count")} ${n}`;
+}
+
+function refreshAccountUI() {
+  const btn = document.getElementById("accountBtn");
+  if (!btn) return;
+
+  const label = currentUser ? t("account.open_profile") : t("account.login");
+  btn.classList.toggle("is-authed", !!currentUser);
+  btn.querySelector(".account-btn__initial").textContent = currentUser ? currentUser.username.charAt(0).toUpperCase() : "";
+  btn.setAttribute("aria-label", label);
+  btn.title = currentUser ? `${currentUser.username} — ${label}` : label;
+
+  document.getElementById("profileName").textContent = currentUser ? currentUser.username : "";
+  document.getElementById("profileAvatar").textContent = currentUser ? currentUser.username.charAt(0).toUpperCase() : "";
+  updateProfileCount();
+}
+
+/* re-sync every "add to playlist" button on the page with the current user's playlist */
+function refreshAllPlaylistButtons() {
+  document.querySelectorAll(".track-card__playlist-btn").forEach((btn) => {
+    const label = btn.querySelector('[data-role="playlist-label"]');
+    if (btn.dataset.trackId && label) setTrackCardPlaylistState(btn, label, isInPlaylist(btn.dataset.trackId));
+  });
+  setHeroPlaylistButtonState(currentResultTrack ? isInPlaylist(currentResultTrack.id) : false);
+}
+
+/* ---------- Auth modal ---------- */
+function setAuthError(key) {
+  const el = document.getElementById("authError");
+  if (key) {
+    el.setAttribute("data-i18n", key);
+    el.textContent = t(key);
+  } else {
+    el.removeAttribute("data-i18n");
+    el.textContent = "";
+  }
+}
+
+function setI18nKey(id, key) {
+  const el = document.getElementById(id);
+  el.setAttribute("data-i18n", key);
+  el.textContent = t(key);
+}
+
+function setAuthMode(mode) {
+  authMode = mode;
+  const isRegister = mode === "register";
+
+  document.querySelectorAll(".auth-tab").forEach((tab) => {
+    const active = tab.dataset.mode === mode;
+    tab.classList.toggle("is-active", active);
+    tab.setAttribute("aria-selected", String(active));
+  });
+
+  setI18nKey("authTitle", isRegister ? "auth.title_register" : "auth.title_login");
+  setI18nKey("authSubmit", isRegister ? "auth.submit_register" : "auth.submit_login");
+  document.getElementById("authConfirmWrap").hidden = !isRegister;
+  document.getElementById("authHint").hidden = !isRegister;
+  document.getElementById("authPassword").autocomplete = isRegister ? "new-password" : "current-password";
+  setAuthError(null);
+}
+
+function openAuthModal(mode) {
+  const modal = document.getElementById("authModal");
+  document.getElementById("authForm").reset();
+  setAuthMode(mode || "login");
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+  window.setTimeout(() => document.getElementById("authLogin").focus(), 30);
+}
+
+function closeAuthModal() {
+  const modal = document.getElementById("authModal");
+  if (modal.hidden) return;
+  modal.hidden = true;
+  document.body.classList.remove("modal-open");
+  document.getElementById("authForm").reset();
+  pendingTrack = null;
+  // closed without logging in while on the profile URL → fall back to the home page
+  if (!currentUser && window.location.hash === "#profile") window.location.hash = "#top";
+}
+
+async function handleAuthSubmit(event) {
+  if (event && event.preventDefault) event.preventDefault();
+  const submitBtn = document.getElementById("authSubmit");
+  if (submitBtn.disabled) return;
+  const loginRaw = document.getElementById("authLogin").value.trim();
+  const password = document.getElementById("authPassword").value;
+  const confirm = document.getElementById("authConfirm").value;
+  const isRegister = authMode === "register";
+
+  setAuthError(null);
+  if (!loginRaw || !password) return setAuthError("auth.err_empty");
+  if (isRegister) {
+    if (!LOGIN_RE.test(loginRaw)) return setAuthError("auth.err_format");
+    if (password.length < 6) return setAuthError("auth.err_pw_short");
+    if (password !== confirm) return setAuthError("auth.err_pw_match");
+  }
+
+  submitBtn.disabled = true;
+  try {
+    await backendReady;
+    if (serverMode) {
+      // ---- accounts live in the server database ----
+      let res;
+      try {
+        res = await api("POST", isRegister ? "/api/register" : "/api/login", { login: loginRaw, password });
+      } catch (e) {
+        return setAuthError("auth.err_server");
+      }
+      if (!res.ok) return setAuthError(serverErrorKey(res));
+
+      authToken = res.data.token;
+      store.set(TOKEN_KEY, authToken);
+
+      let tracks = [];
+      if (isRegister) {
+        // a playlist from the old account-less version moves into the first new account
+        const legacy = readJSON(LEGACY_PLAYLIST_KEY, null);
+        if (Array.isArray(legacy) && legacy.length) {
+          tracks = legacy;
+          api("PUT", "/api/playlist", { tracks }).catch(() => {});
+          store.remove(LEGACY_PLAYLIST_KEY);
+        }
+      } else {
+        try {
+          const pl = await api("GET", "/api/playlist");
+          if (pl.ok && Array.isArray(pl.data.tracks)) tracks = pl.data.tracks;
+        } catch (e) { /* empty playlist */ }
+      }
+      completeLogin(res.data.username.toLowerCase(), res.data.username, isRegister ? "toast.registered" : "toast.logged_in", tracks);
+      return;
+    }
+
+    // ---- no server: browser-only accounts ----
+    const key = loginRaw.toLowerCase();
+    const users = loadUsers();
+
+    if (isRegister) {
+      if (users[key]) return setAuthError("auth.err_taken");
+
+      const salt = randomSalt();
+      users[key] = {
+        username: loginRaw,
+        salt,
+        hash: await hashPassword(password, salt),
+        createdAt: Date.now(),
+      };
+      store.set(USERS_KEY, JSON.stringify(users));
+
+      const legacy = readJSON(LEGACY_PLAYLIST_KEY, null);
+      if (Array.isArray(legacy) && legacy.length && Object.keys(users).length === 1) {
+        store.set(PLAYLIST_KEY_PREFIX + key, JSON.stringify(legacy));
+      }
+      store.remove(LEGACY_PLAYLIST_KEY);
+
+      completeLogin(key, users[key].username, "toast.registered");
+    } else {
+      const user = users[key];
+      if (!user) return setAuthError("auth.err_wrong");
+      const hash = await hashPassword(password, user.salt);
+      if (hash !== user.hash) return setAuthError("auth.err_wrong");
+
+      completeLogin(key, user.username, "toast.logged_in");
+    }
+  } catch (e) {
+    setAuthError("auth.err_generic");
+  } finally {
+    submitBtn.disabled = false;
+  }
+}
+
+function completeLogin(key, username, toastKey, serverTracks) {
+  currentUser = { key, username };
+  if (serverTracks !== undefined) {
+    playlist = serverTracks;
+  } else {
+    store.set(SESSION_KEY, key);
+    playlist = loadPlaylist();
+  }
+
+  const track = pendingTrack;
+  pendingTrack = null;
+
+  const modal = document.getElementById("authModal");
+  modal.hidden = true;
+  document.body.classList.remove("modal-open");
+  document.getElementById("authForm").reset();
+
+  refreshAccountUI();
+  renderPlaylist();
+  refreshAllPlaylistButtons();
+  showToast(t(toastKey));
+
+  if (track) {
+    addToPlaylist(track); // the user was adding a track when asked to log in — stay where they were
+    if (window.location.hash === "#profile") applyRoute();
+  } else {
+    if (window.location.hash === "#profile") applyRoute();
+    else window.location.hash = "#profile";
+  }
+}
+
+function logout() {
+  if (serverMode) {
+    if (authToken) api("POST", "/api/logout").catch(() => {});
+    authToken = null;
+    store.remove(TOKEN_KEY);
+  } else {
+    store.remove(SESSION_KEY);
+  }
+  currentUser = null;
+  playlist = [];
+  pendingTrack = null;
+  if (typeof AudioPreview !== "undefined" && AudioPreview.stop) AudioPreview.stop();
+
+  refreshAccountUI();
+  renderPlaylist();
+  refreshAllPlaylistButtons();
+  showToast(t("toast.logged_out"));
+
+  if (window.location.hash === "#profile") window.location.hash = "#top";
+  else applyRoute();
+}
+
+/* ---------- Routing: #profile shows the account page, everything else the home page ---------- */
+function applyRoute() {
+  const wantsProfile = window.location.hash === "#profile";
+
+  if (wantsProfile && !currentUser) {
+    showView("home");
+    if (document.getElementById("authModal").hidden) openAuthModal("login");
+    return;
+  }
+
+  const previous = currentView;
+  showView(wantsProfile ? "profile" : "home");
+
+  if (wantsProfile) {
+    renderPlaylist();
+    window.scrollTo(0, 0);
+  } else if (previous === "profile") {
+    // coming back from the profile page: the browser couldn't scroll to a hidden anchor, so do it now
+    const id = window.location.hash.slice(1);
+    const target = id ? document.getElementById(id) : null;
+    if (target) target.scrollIntoView();
+    else window.scrollTo(0, 0);
+  }
+}
+
+function showView(view) {
+  currentView = view;
+  document.getElementById("viewHome").hidden = view !== "home";
+  document.getElementById("viewProfile").hidden = view !== "profile";
+}
+
+function initAccount() {
+  const modal = document.getElementById("authModal");
+
+  document.getElementById("accountBtn").addEventListener("click", () => {
+    if (!currentUser) {
+      pendingTrack = null;
+      openAuthModal("login");
+    } else if (window.location.hash === "#profile") {
+      applyRoute();
+    } else {
+      window.location.hash = "#profile";
+    }
+  });
+
+  modal.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", closeAuthModal));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !modal.hidden) closeAuthModal();
+  });
+
+  modal.querySelectorAll(".auth-tab").forEach((tab) => {
+    tab.addEventListener("click", () => setAuthMode(tab.dataset.mode));
+  });
+
+  // not relying on native <form> submission: it is blocked in sandboxed previews
+  document.getElementById("authForm").addEventListener("submit", (e) => e.preventDefault());
+  document.getElementById("authSubmit").addEventListener("click", handleAuthSubmit);
+  modal.querySelectorAll(".auth-input").forEach((input) => {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") handleAuthSubmit(e);
+    });
+  });
+
+  const pw = document.getElementById("authPassword");
+  const confirm = document.getElementById("authConfirm");
+  document.getElementById("authPwToggle").addEventListener("click", () => {
+    const show = pw.type === "password";
+    pw.type = show ? "text" : "password";
+    confirm.type = show ? "text" : "password";
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", logout);
+
+  window.addEventListener("hashchange", applyRoute);
+
+  refreshAccountUI();
+  applyRoute();
+
+  // detect the database server; if found, switch to server accounts and re-render
+  backendReady = initBackend().then(() => {
+    refreshAccountUI();
+    renderPlaylist();
+    refreshAllPlaylistButtons();
+    applyRoute();
+  });
+}
+
+/* ---------- Toast helper ---------- */
+let toastTimer = null;
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("is-visible");
+
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => {
+    toast.classList.remove("is-visible");
+  }, 2600);
+}
+
+</script>
+    <!-- ==========================================================
+         CLOUDFLARE WORKER SOURCE (server-side, NOT part of this page)
+         ==========================================================
+         Everything below runs on Cloudflare's servers, not in the
+         browser — it can't literally execute as part of this HTML
+         file (different JS runtime, no DOM, no window). It's kept
+         here only so the whole project ships as one file instead of
+         two. type="text/plain" makes the browser treat it as inert
+         text and skip it entirely — nothing here runs on page load.
+
+         To use it: open this file, copy everything between the
+         START/END markers below, paste it into a new Cloudflare
+         Worker (dash.cloudflare.com -> Workers & Pages -> Create ->
+         Create Worker -> replace the sample code -> Deploy), then
+         set PROXY_BASE near the top of the <script> above to the
+         *.workers.dev URL you get. Leave PROXY_BASE empty and this
+         block is simply unused — the site works without it. -->
+    <script type="text/plain" id="cloudflare-worker-source">
+/* ===== WORKER.JS START — paste from here down into Cloudflare ===== */
+/**
+ * musicsave-proxy — minimal backend for musicsave.html
+ * ------------------------------------------------------
+ * Two endpoints only, both read-only, both just forward a request
+ * server-side (where CORS doesn't apply) and add CORS headers to the
+ * response so the static site can call them straight from the browser:
+ *
+ *   GET /oembed?service=youtube|soundcloud|spotify&url=<link>
+ *     -> forwards to that service's public oEmbed endpoint
+ *   GET /search?term=<text>
+ *     -> forwards to the iTunes Search API
+ *   GET /lookup?id=<itunes track id>
+ *     -> forwards to the iTunes Lookup API (exact id match, used for
+ *        Apple Music links, which carry this id directly)
+ *
+ * No API keys, no state, no database — this exists only to avoid
+ * depending on third-party public CORS-relay services, which can go
+ * down or rate-limit at any time.
+ *
+ * DEPLOY (free, ~2 minutes, no CLI needed):
+ *   1. https://dash.cloudflare.com -> Workers & Pages -> Create ->
+ *      "Create Worker".
+ *   2. Delete the sample code, paste this whole block in, click Deploy.
+ *   3. Copy the *.workers.dev URL it gives you.
+ *   4. In this file's <script> above, set: const PROXY_BASE = "<that URL>";
+ */
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: CORS_HEADERS });
+    }
+
+    try {
+      if (url.pathname === "/oembed") {
+        return await handleOEmbed(url);
+      }
+      if (url.pathname === "/search") {
+        return await handleSearch(url);
+      }
+      if (url.pathname === "/lookup") {
+        return await handleLookup(url);
+      }
+      return jsonResponse({ error: "Not found" }, 404);
+    } catch (err) {
+      return jsonResponse({ error: String((err && err.message) || err) }, 502);
+    }
+  },
+};
+
+async function handleOEmbed(url) {
+  const service = url.searchParams.get("service") || "";
+  const target = url.searchParams.get("url") || "";
+  if (!target || !service) {
+    return jsonResponse({ error: "Missing url or service parameter" }, 400);
+  }
+
+  const endpoint = buildOEmbedEndpoint(service, target);
+  if (!endpoint) {
+    return jsonResponse({ error: "Unsupported service" }, 400);
+  }
+
+  return forwardJson(endpoint);
+}
+
+async function handleSearch(url) {
+  const term = url.searchParams.get("term") || "";
+  if (!term) {
+    return jsonResponse({ error: "Missing term parameter" }, 400);
+  }
+  const endpoint = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=12`;
+  return forwardJson(endpoint);
+}
+
+async function handleLookup(url) {
+  const id = url.searchParams.get("id") || "";
+  if (!id || !/^\d+$/.test(id)) {
+    return jsonResponse({ error: "Missing or invalid id parameter" }, 400);
+  }
+  const country = url.searchParams.get("country") || "";
+  const cc = /^[a-z]{2}$/i.test(country) ? `&country=${country.toLowerCase()}` : "";
+  const endpoint = `https://itunes.apple.com/lookup?id=${encodeURIComponent(id)}${cc}`;
+  return forwardJson(endpoint);
+}
+
+function buildOEmbedEndpoint(service, target) {
+  switch (service) {
+    case "youtube":
+      return `https://www.youtube.com/oembed?url=${encodeURIComponent(canonicalizeYouTubeUrl(target))}&format=json`;
+    case "soundcloud":
+      return `https://soundcloud.com/oembed?url=${encodeURIComponent(target)}&format=json`;
+    case "spotify":
+      return `https://open.spotify.com/oembed?url=${encodeURIComponent(target)}`;
+    default:
+      return null;
+  }
+}
+
+/* Same fix as the client-side app: YouTube's oEmbed provider doesn't
+   recognize music.youtube.com links, even though it's the same video
+   ID as the regular youtube.com/watch link. */
+function canonicalizeYouTubeUrl(rawUrl) {
+  try {
+    const u = new URL(rawUrl);
+    const host = u.hostname.toLowerCase().replace(/^www\./, "");
+    let id = null;
+    if (host === "youtu.be") {
+      id = u.pathname.split("/").filter(Boolean)[0] || null;
+    } else if (host === "youtube.com" || host === "music.youtube.com" || host === "m.youtube.com") {
+      id = u.searchParams.get("v");
+      if (!id) {
+        const m = u.pathname.match(/^\/(?:shorts|live|embed)\/([^/?]+)/);
+        if (m) id = m[1];
+      }
+    }
+    return id ? `https://www.youtube.com/watch?v=${id}` : rawUrl;
+  } catch (err) {
+    return rawUrl;
+  }
+}
+
+async function forwardJson(endpoint) {
+  const upstream = await fetch(endpoint, {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; musicsave-proxy/1.0)" },
+  });
+  const text = await upstream.text();
+  return new Response(text, {
+    status: upstream.status,
+    headers: { ...CORS_HEADERS, "Content-Type": "application/json; charset=utf-8" },
+  });
+}
+
+function jsonResponse(obj, status) {
+  return new Response(JSON.stringify(obj), {
+    status: status || 200,
+    headers: { ...CORS_HEADERS, "Content-Type": "application/json; charset=utf-8" },
+  });
+}
+/* ===== WORKER.JS END ===== */
+    </script>
+
+<!-- ===== Below is NOT the page: server + database code, kept here as inert text so everything lives in one file ===== -->
+<script type="text/plain" id="tunevault-server">
+// TuneVault server + SQLite database (node:sqlite, no npm packages). Needs Node >= 22.13.
+// Put this file next to tunevault.html.   Run: node server.js  ->  http://localhost:3000   Test: node server.js --test
+// Data is stored in ./data/tunevault.db (env: PORT, DB_FILE).
+// SERVER-START
+const http = require("node:http"), fs = require("node:fs"), path = require("node:path"), crypto = require("node:crypto");
+const { DatabaseSync } = require("node:sqlite");
+const PAGE_FILE = path.join(__dirname, "tunevault.html"); // the website
+const PORT = +process.env.PORT || 3000, DB_FILE = process.argv.includes("--test") ? ":memory:" : (process.env.DB_FILE || path.join(__dirname, "data", "tunevault.db"));
+fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
+
+/* ---------- migrations (PRAGMA user_version); a backup copy is made before any pending one ---------- */
+const MIGRATIONS = [`
+  CREATE TABLE users (id INTEGER PRIMARY KEY, login TEXT NOT NULL UNIQUE COLLATE NOCASE, username TEXT NOT NULL,
+    pw_salt TEXT NOT NULL, pw_hash TEXT NOT NULL, settings TEXT NOT NULL DEFAULT '{}', created_at INTEGER NOT NULL);
+  CREATE TABLE sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL);
+  CREATE INDEX idx_sessions_user ON sessions(user_id);
+  CREATE TABLE tracks (id TEXT PRIMARY KEY, title TEXT NOT NULL, artist TEXT NOT NULL, duration_ms INTEGER NOT NULL DEFAULT 0, data TEXT NOT NULL);
+  CREATE TABLE playlists (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL, cover_url TEXT, is_default INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL);
+  CREATE INDEX idx_playlists_user ON playlists(user_id);
+  CREATE TABLE playlist_tracks (playlist_id INTEGER NOT NULL REFERENCES playlists(id) ON DELETE CASCADE,
+    track_id TEXT NOT NULL REFERENCES tracks(id), position INTEGER NOT NULL, added_at INTEGER NOT NULL,
+    PRIMARY KEY (playlist_id, track_id));
+  CREATE INDEX idx_pt_order ON playlist_tracks(playlist_id, position);
+  CREATE TABLE favorites (user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    track_id TEXT NOT NULL REFERENCES tracks(id), added_at INTEGER NOT NULL, PRIMARY KEY (user_id, track_id));`];
+const db = new DatabaseSync(DB_FILE);
+db.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;");
+const ver = db.prepare("PRAGMA user_version").get().user_version;
+if (ver < MIGRATIONS.length) {
+  if (ver > 0) { fs.mkdirSync(path.join(path.dirname(DB_FILE), "backups"), { recursive: true });
+    db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+    fs.copyFileSync(DB_FILE, path.join(path.dirname(DB_FILE), "backups", `pre-v${ver}-${Date.now()}.db`)); }
+  for (let v = ver; v < MIGRATIONS.length; v++) { db.exec("BEGIN"); try { db.exec(MIGRATIONS[v]); db.exec(`PRAGMA user_version = ${v + 1}`); db.exec("COMMIT"); } catch (e) { db.exec("ROLLBACK"); throw e; } }
+}
+const q = (sql) => db.prepare(sql);
+const tx = (fn) => { db.exec("BEGIN IMMEDIATE"); try { const r = fn(); db.exec("COMMIT"); return r; } catch (e) { db.exec("ROLLBACK"); throw e; } };
+const now = () => Date.now();
+
+/* ---------- auth: scrypt password hashes, random session tokens (only their SHA-256 is stored) ---------- */
+const sha = (s) => crypto.createHash("sha256").update(s).digest("hex");
+const scrypt = (pw, salt) => crypto.scryptSync(pw, salt, 64).toString("hex");
+const LOGIN_RE = /^[A-Za-z0-9_.\-\u0400-\u04FF]{3,20}$/, SESSION_MS = 30 * 864e5;
+const fails = new Map(); // ip+login -> {n, until}
+const throttled = (k) => { const f = fails.get(k); return f && f.until > now() && f.n >= 8; };
+const noteFail = (k) => { const f = fails.get(k); fails.set(k, { n: (f && f.until > now() ? f.n : 0) + 1, until: now() + 10 * 60e3 }); };
+function newSession(uid) { const token = crypto.randomBytes(32).toString("hex");
+  q("INSERT INTO sessions VALUES (?,?,?,?)").run(sha(token), uid, now(), now() + SESSION_MS); return token; }
+function authUser(req) { const m = /^Bearer (\w+)$/.exec(req.headers.authorization || ""); if (!m) return null;
+  return q(`SELECT u.id, u.username FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?`).get(sha(m[1]), now()) || null; }
+
+/* ---------- data helpers ---------- */
+const durMs = (d) => { const m = /^(\d+):(\d{2})$/.exec(d || ""); return m ? (+m[1] * 60 + +m[2]) * 1000 : 0; };
+function upsertTrack(t) { if (!t || typeof t !== "object" || !t.id) throw new HttpError(400, "bad_track");
+  const id = String(t.id).slice(0, 200), data = JSON.stringify({ ...t, id });
+  if (data.length > 20000) throw new HttpError(400, "bad_track");
+  q(`INSERT INTO tracks (id,title,artist,duration_ms,data) VALUES (?,?,?,?,?)
+     ON CONFLICT(id) DO UPDATE SET title=excluded.title, artist=excluded.artist, duration_ms=excluded.duration_ms, data=excluded.data`)
+    .run(id, String(t.track || t.title || "—").slice(0, 300), String(t.artist || "—").slice(0, 300), durMs(t.duration), data); return id; }
+function defaultPlaylist(uid) { let p = q("SELECT id FROM playlists WHERE user_id=? AND is_default=1").get(uid);
+  if (!p) { const r = q("INSERT INTO playlists (user_id,name,is_default,created_at,updated_at) VALUES (?,?,1,?,?)").run(uid, "My playlist", now(), now()); p = { id: Number(r.lastInsertRowid) }; } return p.id; }
+const ownPlaylist = (uid, id) => { const p = q("SELECT * FROM playlists WHERE id=? AND user_id=?").get(+id, uid); if (!p) throw new HttpError(404, "not_found"); return p; };
+const tracksOf = (pid) => q(`SELECT t.data FROM playlist_tracks pt JOIN tracks t ON t.id=pt.track_id WHERE pt.playlist_id=? ORDER BY pt.position`).all(pid).map((r) => JSON.parse(r.data));
+const touch = (pid) => q("UPDATE playlists SET updated_at=? WHERE id=?").run(now(), pid);
+function setOrder(pid, ids) { // replaces order; ignores duplicates, keeps only given tracks
+  const seen = [...new Set(ids.map(String))]; q("DELETE FROM playlist_tracks WHERE playlist_id=?").run(pid);
+  const ins = q("INSERT INTO playlist_tracks VALUES (?,?,?,?)"); seen.forEach((id, i) => ins.run(pid, id, i, now())); touch(pid); }
+
+class HttpError extends Error { constructor(status, code) { super(code); this.status = status; this.code = code; } }
+const must = (c, s = 400, e = "bad_request") => { if (!c) throw new HttpError(s, e); };
+
+/* ---------- routes ---------- */
+const routes = [];
+const on = (method, re, fn, open) => routes.push({ method, re: new RegExp(`^${re}$`), fn, open });
+on("GET", "/api/health", () => ({ ok: true }), true);
+function credentials(b, reg) { must(b && typeof b.login === "string" && typeof b.password === "string");
+  const login = b.login.trim(); if (reg) { must(LOGIN_RE.test(login), 400, "format"); must(b.password.length >= 6 && b.password.length <= 200, 400, "pw_short"); } return login; }
+on("POST", "/api/register", (r) => { const login = credentials(r.body, true), salt = crypto.randomBytes(16).toString("hex");
+  must(!q("SELECT 1 FROM users WHERE login=?").get(login), 409, "taken");
+  return tx(() => { const u = q("INSERT INTO users (login,username,pw_salt,pw_hash,created_at) VALUES (?,?,?,?,?)").run(login, login, salt, scrypt(r.body.password, salt), now());
+    const uid = Number(u.lastInsertRowid); defaultPlaylist(uid); return { token: newSession(uid), username: login }; }); }, true);
+on("POST", "/api/login", (r) => { const login = credentials(r.body, false), key = r.ip + "|" + login.toLowerCase();
+  must(!throttled(key), 429, "too_many"); const u = q("SELECT * FROM users WHERE login=?").get(login);
+  const ok = u && crypto.timingSafeEqual(Buffer.from(scrypt(r.body.password, u.pw_salt), "hex"), Buffer.from(u.pw_hash, "hex"));
+  if (!ok) { noteFail(key); throw new HttpError(401, "wrong"); } fails.delete(key); return { token: newSession(u.id), username: u.username }; }, true);
+on("POST", "/api/logout", (r) => { const m = /^Bearer (\w+)$/.exec(r.req.headers.authorization || ""); if (m) q("DELETE FROM sessions WHERE token_hash=?").run(sha(m[1])); return { ok: true }; }, true);
+on("GET", "/api/me", (r) => ({ username: r.user.username }));
+on("GET", "/api/settings", (r) => JSON.parse(q("SELECT settings FROM users WHERE id=?").get(r.user.id).settings));
+on("PUT", "/api/settings", (r) => { must(r.body && typeof r.body === "object" && !Array.isArray(r.body)); const s = JSON.stringify(r.body); must(s.length < 5000);
+  q("UPDATE users SET settings=? WHERE id=?").run(s, r.user.id); return { ok: true }; });
+// legacy single-playlist endpoints used by the current frontend -> the user's default playlist
+on("GET", "/api/playlist", (r) => ({ tracks: tracksOf(defaultPlaylist(r.user.id)) }));
+on("PUT", "/api/playlist", (r) => { must(r.body && Array.isArray(r.body.tracks) && r.body.tracks.length <= 5000);
+  tx(() => { setOrder(defaultPlaylist(r.user.id), r.body.tracks.map(upsertTrack)); }); return { ok: true }; });
+// playlists
+on("GET", "/api/playlists", (r) => ({ playlists: q(`SELECT p.id,p.name,p.cover_url,p.is_default,p.updated_at, COUNT(pt.track_id) AS count, COALESCE(SUM(t.duration_ms),0) AS duration_ms
+  FROM playlists p LEFT JOIN playlist_tracks pt ON pt.playlist_id=p.id LEFT JOIN tracks t ON t.id=pt.track_id WHERE p.user_id=? GROUP BY p.id ORDER BY p.is_default DESC, p.created_at`).all(r.user.id) }));
+const nameOf = (b) => { must(b && typeof b.name === "string" && b.name.trim().length >= 1 && b.name.trim().length <= 100); return b.name.trim(); };
+on("POST", "/api/playlists", (r) => { const n = nameOf(r.body); must(q("SELECT COUNT(*) c FROM playlists WHERE user_id=?").get(r.user.id).c < 200, 400, "limit");
+  return { id: Number(q("INSERT INTO playlists (user_id,name,created_at,updated_at) VALUES (?,?,?,?)").run(r.user.id, n, now(), now()).lastInsertRowid), name: n }; });
+on("PATCH", "/api/playlists/(\\d+)", (r) => { const p = ownPlaylist(r.user.id, r.m[1]), b = r.body || {};
+  const name = b.name !== undefined ? nameOf(b) : p.name, cover = b.cover_url !== undefined ? (b.cover_url === null ? null : String(b.cover_url).slice(0, 2000)) : p.cover_url;
+  must(cover === null || /^https?:\/\//.test(cover) || /^data:image\/(png|jpe?g|webp);base64,/.test(cover)); q("UPDATE playlists SET name=?, cover_url=?, updated_at=? WHERE id=?").run(name, cover, now(), p.id); return { ok: true }; });
+on("DELETE", "/api/playlists/(\\d+)", (r) => { const p = ownPlaylist(r.user.id, r.m[1]); must(!p.is_default, 400, "default_playlist");
+  q("DELETE FROM playlists WHERE id=?").run(p.id); return { ok: true }; }); // tracks stay in the library (tracks table / other playlists)
+on("GET", "/api/playlists/(\\d+)/tracks", (r) => ({ tracks: tracksOf(ownPlaylist(r.user.id, r.m[1]).id) }));
+on("POST", "/api/playlists/(\\d+)/tracks", (r) => tx(() => { const p = ownPlaylist(r.user.id, r.m[1]), id = upsertTrack(r.body && r.body.track);
+  if (q("SELECT 1 FROM playlist_tracks WHERE playlist_id=? AND track_id=?").get(p.id, id)) return { ok: true, duplicate: true };
+  const pos = q("SELECT COALESCE(MAX(position),-1)+1 n FROM playlist_tracks WHERE playlist_id=?").get(p.id).n;
+  q("INSERT INTO playlist_tracks VALUES (?,?,?,?)").run(p.id, id, pos, now()); touch(p.id); return { ok: true, position: pos }; }));
+on("PUT", "/api/playlists/(\\d+)/order", (r) => tx(() => { const p = ownPlaylist(r.user.id, r.m[1]); must(r.body && Array.isArray(r.body.order));
+  const have = q("SELECT track_id FROM playlist_tracks WHERE playlist_id=?").all(p.id).map((x) => x.track_id).sort();
+  must(JSON.stringify(have) === JSON.stringify([...new Set(r.body.order.map(String))].sort()), 400, "order_mismatch"); setOrder(p.id, r.body.order); return { ok: true }; }));
+on("DELETE", "/api/playlists/(\\d+)/tracks/([^/]+)", (r) => tx(() => { const p = ownPlaylist(r.user.id, r.m[1]);
+  q("DELETE FROM playlist_tracks WHERE playlist_id=? AND track_id=?").run(p.id, decodeURIComponent(r.m[2]));
+  setOrder(p.id, q("SELECT track_id FROM playlist_tracks WHERE playlist_id=? ORDER BY position").all(p.id).map((x) => x.track_id)); return { ok: true }; }));
+// favorites
+on("GET", "/api/favorites", (r) => ({ tracks: q(`SELECT t.data FROM favorites f JOIN tracks t ON t.id=f.track_id WHERE f.user_id=? ORDER BY f.added_at DESC`).all(r.user.id).map((x) => JSON.parse(x.data)) }));
+on("PUT", "/api/favorites", (r) => tx(() => { const id = upsertTrack(r.body && r.body.track); q("INSERT OR IGNORE INTO favorites VALUES (?,?,?)").run(r.user.id, id, now()); return { ok: true }; }));
+on("DELETE", "/api/favorites/([^/]+)", (r) => { q("DELETE FROM favorites WHERE user_id=? AND track_id=?").run(r.user.id, decodeURIComponent(r.m[1])); return { ok: true }; });
+
+/* ---------- http ---------- */
+const send = (res, status, obj) => { const s = JSON.stringify(obj); res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" }); res.end(s); };
+const server = http.createServer((req, res) => {
+  const url = new URL(req.url, "http://x");
+  if (!url.pathname.startsWith("/api/")) { // static: only the page file
+    if (req.method !== "GET" || url.pathname !== "/") { res.writeHead(404); return res.end(); }
+    fs.readFile(PAGE_FILE, (err, buf) => { if (err) { res.writeHead(500); return res.end("tunevault.html must lie next to server.js"); }
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "X-Content-Type-Options": "nosniff" }); res.end(buf); }); return; }
+  let raw = ""; let big = false;
+  req.on("data", (c) => { raw += c; if (raw.length > 2e6) { big = true; req.destroy(); } });
+  req.on("end", () => { if (big) return;
+    try {
+      const route = routes.map((r) => ({ r, m: r.re.exec(url.pathname) })).find((x) => x.m && x.r.method === req.method);
+      if (!route) throw new HttpError(404, "not_found");
+      let body; if (raw) { try { body = JSON.parse(raw); } catch { throw new HttpError(400, "bad_json"); } }
+      const user = route.r.open ? null : authUser(req); if (!route.r.open && !user) throw new HttpError(401, "unauthorized");
+      send(res, 200, route.r.fn({ req, body, user, m: route.m, ip: req.socket.remoteAddress }));
+    } catch (e) {
+      if (e instanceof HttpError) return send(res, e.status, { error: e.code });
+      if (/UNIQUE/.test(String(e.message))) return send(res, 409, { error: "taken" });
+      console.error(e); send(res, 500, { error: "server" }); } });
+});
+
+/* ---------- self-test: node tunevault.js --test  (starts the server as a child process on a temp database) ---------- */
+async function selfTest() {
+  const assert = require("node:assert"), os = require("node:os"), { spawn } = require("node:child_process");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "tv-")), dbFile = path.join(dir, "t.db"), port = 30000 + Math.floor(Math.random() * 20000), base = `http://127.0.0.1:${port}`;
+  let child;
+  const boot = () => new Promise((ok, no) => { child = spawn(process.execPath, ["--no-warnings", __filename], { env: { ...process.env, DB_FILE: dbFile, PORT: String(port) }, stdio: ["ignore", "pipe", "inherit"] });
+    child.stdout.on("data", (d) => /TuneVault:/.test(d) && ok()); child.on("exit", (c) => c && no(new Error("server exited with " + c))); });
+  const stop = () => new Promise((r) => { child.once("exit", r); child.kill(); });
+  const call = async (m, u, b, tok) => { const r = await fetch(base + u, { method: m, headers: { "Content-Type": "application/json", ...(tok ? { Authorization: "Bearer " + tok } : {}) }, body: b === undefined ? undefined : JSON.stringify(b) }); return { s: r.status, d: await r.json().catch(() => ({})) }; };
+  const T = (n) => ({ id: "t" + n, track: "Song " + n, artist: "Art " + n, duration: "3:0" + n, artworkUrl: "https://x/" + n, previewUrl: "https://x/p" + n });
+  let pass = 0; const t = async (name, fn) => { await fn(); pass++; console.log("ok  -", name); };
+  await boot();
+  try {
+    const a = (await call("POST", "/api/register", { login: "Anna", password: "secret1" })).d.token; let pid;
+    await t("site is served at / and server.js is not", async () => { const r = await fetch(base + "/"); assert.equal(r.status, 200); assert.match(await r.text(), /TuneVault/); assert.equal((await fetch(base + "/server.js")).status, 404); });
+    await t("register: duplicate login (any case), bad format, short password rejected", async () => { assert.equal((await call("POST", "/api/register", { login: "anna", password: "secret1" })).s, 409); assert.equal((await call("POST", "/api/register", { login: "a", password: "secret1" })).d.error, "format"); assert.equal((await call("POST", "/api/register", { login: "Bob_1", password: "123" })).d.error, "pw_short"); });
+    await t("wrong password 401, SQL-injection login 401, right login ok", async () => { assert.equal((await call("POST", "/api/login", { login: "Anna", password: "bad" })).d.error, "wrong"); assert.equal((await call("POST", "/api/login", { login: "' OR '1'='1", password: "x" })).s, 401); assert.ok((await call("POST", "/api/login", { login: "anna", password: "secret1" })).d.token); });
+    await t("password is not stored in plain text", async () => { const row = new DatabaseSync(dbFile).prepare("SELECT pw_hash FROM users").get(); assert.ok(!row.pw_hash.includes("secret1") && row.pw_hash.length === 128); });
+    await t("API requires a valid token", async () => { assert.equal((await call("GET", "/api/me")).s, 401); assert.equal((await call("GET", "/api/playlist", undefined, "deadbeef")).s, 401); });
+    await t("legacy PUT/GET /api/playlist keeps order and drops duplicates", async () => { assert.equal((await call("PUT", "/api/playlist", { tracks: [T(3), T(1), T(2), T(1)] }, a)).s, 200); assert.deepEqual((await call("GET", "/api/playlist", undefined, a)).d.tracks.map((x) => x.id), ["t3", "t1", "t2"]); });
+    await t("playlist: create, add (no duplicates), reorder, rename, cover, count + duration", async () => {
+      pid = (await call("POST", "/api/playlists", { name: "Road" }, a)).d.id; for (const n of [1, 2, 3, 2]) await call("POST", `/api/playlists/${pid}/tracks`, { track: T(n) }, a);
+      assert.deepEqual((await call("GET", `/api/playlists/${pid}/tracks`, undefined, a)).d.tracks.map((x) => x.id), ["t1", "t2", "t3"]);
+      assert.equal((await call("PUT", `/api/playlists/${pid}/order`, { order: ["t3", "t1"] }, a)).d.error, "order_mismatch"); assert.equal((await call("PUT", `/api/playlists/${pid}/order`, { order: ["t3", "t1", "t2"] }, a)).s, 200);
+      assert.equal((await call("PATCH", `/api/playlists/${pid}`, { name: "Road trip", cover_url: "https://x/c.jpg" }, a)).s, 200);
+      const l = (await call("GET", "/api/playlists", undefined, a)).d.playlists.find((p) => p.id === pid); assert.deepEqual([l.name, l.count, l.duration_ms, l.cover_url], ["Road trip", 3, (181 + 182 + 183) * 1000, "https://x/c.jpg"]); });
+    await t("removing a track from a playlist keeps it in the library and other playlists", async () => { await call("DELETE", `/api/playlists/${pid}/tracks/t1`, undefined, a); assert.deepEqual((await call("GET", `/api/playlists/${pid}/tracks`, undefined, a)).d.tracks.map((x) => x.id), ["t3", "t2"]); assert.equal((await call("GET", "/api/playlist", undefined, a)).d.tracks.length, 3); });
+    await t("favorites: add, no duplicate, remove", async () => { await call("PUT", "/api/favorites", { track: T(2) }, a); await call("PUT", "/api/favorites", { track: T(2) }, a); assert.equal((await call("GET", "/api/favorites", undefined, a)).d.tracks.length, 1); await call("DELETE", "/api/favorites/t2", undefined, a); assert.equal((await call("GET", "/api/favorites", undefined, a)).d.tracks.length, 0); });
+    await t("settings round-trip", async () => { await call("PUT", "/api/settings", { lang: "en", volume: 0.4 }, a); assert.deepEqual((await call("GET", "/api/settings", undefined, a)).d, { lang: "en", volume: 0.4 }); });
+    await t("another user cannot read, change or delete Anna's playlist", async () => { const b = (await call("POST", "/api/register", { login: "Bob", password: "secret2" })).d.token;
+      for (const [m, u, body] of [["GET", `/api/playlists/${pid}/tracks`], ["POST", `/api/playlists/${pid}/tracks`, { track: T(9) }], ["PATCH", `/api/playlists/${pid}`, { name: "x" }], ["DELETE", `/api/playlists/${pid}`], ["DELETE", `/api/playlists/${pid}/tracks/t3`], ["PUT", `/api/playlists/${pid}/order`, { order: [] }]]) assert.equal((await call(m, u, body, b)).s, 404, m + " " + u);
+      assert.equal((await call("GET", "/api/playlist", undefined, b)).d.tracks.length, 0); assert.equal((await call("GET", "/api/playlists", undefined, b)).d.playlists.length, 1); });
+    await t("default playlist is protected; deleting another keeps songs in the library", async () => { const def = (await call("GET", "/api/playlists", undefined, a)).d.playlists.find((p) => p.is_default).id; assert.equal((await call("DELETE", `/api/playlists/${def}`, undefined, a)).d.error, "default_playlist"); assert.equal((await call("DELETE", `/api/playlists/${pid}`, undefined, a)).s, 200); assert.equal(new DatabaseSync(dbFile).prepare("SELECT COUNT(*) c FROM tracks").get().c, 3); });
+    await t("data survives a server restart; logout invalidates the token", async () => { await stop(); await boot(); assert.deepEqual((await call("GET", "/api/playlist", undefined, a)).d.tracks.map((x) => x.id), ["t3", "t1", "t2"]); assert.equal((await call("POST", "/api/logout", undefined, a)).s, 200); assert.equal((await call("GET", "/api/me", undefined, a)).s, 401); });
+    console.log(`\n${pass} tests passed`);
+  } finally { await stop().catch(() => {}); fs.rmSync(dir, { recursive: true, force: true }); }
+}
+
+if (process.argv.includes("--test")) selfTest().then(() => process.exit(0), (e) => { console.error("FAILED:", e.message); process.exit(1); });
+else { q("DELETE FROM sessions WHERE expires_at < ?").run(now()); server.listen(PORT, () => console.log(`TuneVault: http://localhost:${PORT}  (db: ${DB_FILE})`)); }
+// SERVER-END
+</script>
+</body>
+</html>
